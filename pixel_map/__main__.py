@@ -1,9 +1,6 @@
 """Main CLI module."""
 
-import json
-import logging
-from pathlib import Path
-from typing import Annotated, Literal, Optional, Union, cast
+from typing import Annotated, Optional
 
 import click
 import typer
@@ -19,6 +16,7 @@ def _version_callback(value: bool) -> None:
     if value:
         typer.echo(f"{__app_name__} {__version__}")
         raise typer.Exit()
+
 
 class BboxGeometryParser(click.ParamType):  # type: ignore
     """Parser for geometry in WKT form."""
@@ -37,8 +35,9 @@ class BboxGeometryParser(click.ParamType):  # type: ignore
                 " separated by commas."
             ) from None
 
+
 @app.command()
-def main(
+def plot(
     files: Annotated[
         list[str],
         typer.Argument(
@@ -76,5 +75,9 @@ def main(
         plot_geo_data(files, bbox=bbox)
 
 
+def main() -> None:
+    app(prog_name=__app_name__)  # pragma: no cover
+
+
 if __name__ == "__main__":
-    app(prog_name=__app_name__)
+    app(prog_name=__app_name__)  # pragma: no cover

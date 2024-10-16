@@ -21,6 +21,9 @@ requires-python = ">=3.9"
 readme = "README.md"
 license = {text = "MIT"}
 
+[project.scripts]
+pixel-map = "pixel_map.__main__:main"
+
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
