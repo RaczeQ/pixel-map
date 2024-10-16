@@ -1,0 +1,161 @@
+from pathlib import Path
+from typing import Optional
+
+import contextily as cx
+import geopandas as gpd
+import img2unicode
+import numpy as np
+from matplotlib import pyplot as plt
+from rich import get_console
+from rich.progress import Progress, SpinnerColumn, TextColumn
+from pyproj import Transformer
+from shapely import box
+
+
+def plot_geo_data(files: list[str], bbox: Optional[list[float]] = None) -> None:
+    console = get_console()
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        transient=True,
+        console=console,
+    ) as progress:
+        progress.add_task("Loading Geo data", total=None)
+        gdf = _load_geo_data(files, bbox=bbox)
+
+    terminal_width = console.width
+    terminal_height = console.height
+
+    map_width = terminal_width
+    map_height = terminal_height * 2
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        transient=True,
+        console=console,
+    ) as progress:
+        progress.add_task("Plotting geo data", total=None)
+        f, ax = plt.subplots(figsize=(map_width, map_height), dpi=10)
+        f.patch.set_facecolor("black")
+        canvas = f.canvas
+        gdf.to_crs(3857).plot(ax=ax, alpha=0.4)
+        ax.axis("off")
+        ax.margins(0)
+        if bbox:
+            transformer = Transformer.from_crs("EPSG:4326", "EPSG:3857", always_xy=True)
+            minx, miny, maxx, maxy = bbox
+            t_minx, t_miny = transformer.transform(minx, miny)
+            t_maxx, t_maxy = transformer.transform(maxx, maxy)
+            ax.set_xlim([t_minx, t_maxx])
+            ax.set_ylim([t_miny, t_maxy])
+        _expand_axes_limit_to_match_ratio(ax, map_width / map_height)
+        # cx.add_basemap(
+        #     ax,
+        #     source=cx.providers.CartoDB.PositronNoLabels,
+        #     crs=3857,
+        #     attribution=False,
+        # )
+        # cx.add_basemap(
+        #     ax,
+        #     source=cx.providers.CartoDB.DarkMatterNoLabels,
+        #     crs=3857,
+        #     attribution=False,
+        # )
+        cx.add_basemap(
+            ax,
+            source=cx.providers.CartoDB.VoyagerNoLabels,
+            crs=3857,
+            attribution=False,
+        )
+        f.tight_layout()
+        canvas.draw()
+        image_flat = np.frombuffer(canvas.tostring_rgb(), dtype="uint8")  # (H * W * 3,)
+        image = image_flat.reshape(*reversed(canvas.get_width_height()), 3)
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        transient=True,
+        console=console,
+    ) as progress:
+        progress.add_task("Rendering geo data", total=None)
+        fast_renderer = img2unicode.Renderer(
+            img2unicode.FastGenericDualOptimizer("block"),
+            max_h=terminal_height,
+            max_w=terminal_width,
+            allow_upscale=True,
+        )
+        chars, fgs, bgs = fast_renderer.render_numpy(image)
+        # braille_renderer = img2unicode.GammaRenderer(
+        #     img2unicode.BestGammaOptimizer(True, "braille"),
+        #     max_h=terminal_height,
+        #     max_w=terminal_width,
+        #     allow_upscale=True,
+        # )
+        # chars, fgs, bgs = braille_renderer.render_numpy(image)
+        full_rich_string = _construct_full_rich_string(chars, fgs, bgs)
+    console.print(full_rich_string)
+
+
+def _load_geo_data(
+    files: list[str], bbox: Optional[list[float]] = None
+) -> gpd.GeoSeries:
+    paths = [Path(file_path) for file_path in files]
+    return gpd.pd.concat(
+        [
+            (
+                _read_geoparquet_file(path, bbox=bbox).geometry
+                if path.suffix == ".parquet"
+                else gpd.read_file(path, bbox=bbox).geometry
+            )
+            for path in paths
+        ]
+    )
+
+
+def _read_geoparquet_file(
+    path: Path, bbox: Optional[list[float]] = None
+) -> gpd.GeoDataFrame:
+    try:
+        return gpd.read_parquet(path, bbox=bbox)
+    except Exception:
+        gdf = gpd.read_parquet(path)
+        if bbox:
+            return gdf.clip_by_rect(*bbox)
+        return gdf
+
+
+def _expand_axes_limit_to_match_ratio(ax, ratio) -> None:
+    left, right = ax.get_xlim()
+    bottom, top = ax.get_ylim()
+    width = right - left
+    height = top - bottom
+    current_ratio = width / height
+    if current_ratio < ratio:
+        new_width = (ratio / current_ratio) * width
+        width_padding = (new_width - width) / 2
+        left = left - width_padding
+        right = right + width_padding
+        ax.set_xlim([left, right])
+    else:
+        new_height = (current_ratio / ratio) * height
+        height_padding = (new_height - height) / 2
+        bottom = bottom - height_padding
+        top = top + height_padding
+        ax.set_ylim([bottom, top])
+
+
+def _construct_full_rich_string(chars, fgs, bgs):
+    result = ""
+    for y in range(chars.shape[0]):
+        for x in range(chars.shape[1]):
+            idx = y, x
+            res = chars[idx]
+            char = chr(res)
+            fg_color = ",".join(map(str, fgs[idx]))
+            bg_color = ",".join(map(str, bgs[idx]))
+            result += f"[rgb({fg_color}) ON rgb({bg_color})]{char}[/rgb({fg_color}) ON rgb({bg_color})]"
+        result += "\n"
+    return result[:-1]
