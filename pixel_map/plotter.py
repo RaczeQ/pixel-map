@@ -10,11 +10,10 @@ from matplotlib import pyplot as plt
 from pyproj import Transformer
 from rich import get_console
 from rich.progress import Progress, SpinnerColumn, TextColumn
-from pyproj import Transformer
 from pyproj.enums import TransformDirection
 
 
-def plot_geo_data(files: list[str], bbox: Optional[list[float]] = None) -> None:
+def plot_geo_data(files: list[str], bbox: Optional[tuple[float, float, float, float]] = None) -> None:
     console = get_console()
 
     terminal_width = console.width
@@ -120,7 +119,7 @@ def plot_geo_data(files: list[str], bbox: Optional[list[float]] = None) -> None:
 
 
 def _load_geo_data(
-    files: list[str], bbox: Optional[list[float]] = None
+    files: list[str], bbox: Optional[tuple[float, float, float, float]] = None
 ) -> gpd.GeoSeries:
     paths = [Path(file_path) for file_path in files]
     return gpd.pd.concat(
@@ -136,7 +135,7 @@ def _load_geo_data(
 
 
 def _read_geoparquet_file(
-    path: Path, bbox: Optional[list[float]] = None
+    path: Path, bbox: Optional[tuple[float, float, float, float]] = None
 ) -> gpd.GeoDataFrame:
     try:
         return gpd.read_parquet(path, bbox=bbox)
@@ -145,7 +144,7 @@ def _read_geoparquet_file(
 
 
 def _expand_bbox_to_match_ratio(
-    bbox: list[float], ratio: float
+    bbox: tuple[float, float, float, float], ratio: float
 ) -> tuple[tuple[float, float, float, float], tuple[float, float, float, float]]:
     minx, miny, maxx, maxy = bbox
 

@@ -1,6 +1,6 @@
 """Main CLI module."""
 
-from typing import Annotated, Optional
+from typing import Annotated, Optional, cast
 
 import click
 import typer
@@ -10,6 +10,16 @@ from pixel_map import __app_name__, __version__
 app = typer.Typer(
     context_settings={"help_option_names": ["-h", "--help"]}, rich_markup_mode="rich"
 )
+
+# TODO:
+# - add option to select colours (pass list - must match number of files)
+# - add option to select colours per type (polygon, linestring, point) (pass list(s) - must match number of files)
+# - define default colour schemes with option to select
+#       --light (positron + blue)
+#       or --dark (darkmatter + orange?) [default]
+#       or --street (voyager + ???)
+# - add option to select tileset (or no tileset) by name
+# - add option to pass map height and width
 
 
 def _version_callback(value: bool) -> None:
@@ -72,7 +82,9 @@ def plot(
 
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore")
-        plot_geo_data(files, bbox=bbox)
+        plot_geo_data(
+            files, bbox=cast(Optional[tuple[float, float, float, float]], bbox)
+        )
 
 
 def main() -> None:
