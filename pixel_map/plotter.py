@@ -4,16 +4,36 @@ from typing import Optional
 import contextily as cx
 import geopandas as gpd
 import img2unicode
+from matplotlib.axes import Axes
 import numpy as np
 from matplotlib import pyplot as plt
 from rich import get_console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from pyproj import Transformer
-from shapely import box
+from pyproj.enums import TransformDirection
 
 
 def plot_geo_data(files: list[str], bbox: Optional[list[float]] = None) -> None:
     console = get_console()
+
+    terminal_width = console.width
+    terminal_height = console.height
+
+    map_width = terminal_width
+    map_height = terminal_height * 2
+
+    map_ratio = map_width / map_height
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        transient=True,
+        console=console,
+    ) as progress:
+        progress.add_task("Calculating bounding box", total=None)
+        bbox_axes_bounds = None
+        if bbox:
+            bbox, bbox_axes_bounds = _expand_bbox_to_match_ratio(bbox, ratio=map_ratio)
 
     with Progress(
         SpinnerColumn(),
@@ -23,12 +43,8 @@ def plot_geo_data(files: list[str], bbox: Optional[list[float]] = None) -> None:
     ) as progress:
         progress.add_task("Loading Geo data", total=None)
         gdf = _load_geo_data(files, bbox=bbox)
-
-    terminal_width = console.width
-    terminal_height = console.height
-
-    map_width = terminal_width
-    map_height = terminal_height * 2
+        if bbox:
+            gdf = gdf.clip_by_rect(*bbox)
 
     with Progress(
         SpinnerColumn(),
@@ -43,14 +59,13 @@ def plot_geo_data(files: list[str], bbox: Optional[list[float]] = None) -> None:
         gdf.to_crs(3857).plot(ax=ax, alpha=0.4)
         ax.axis("off")
         ax.margins(0)
-        if bbox:
-            transformer = Transformer.from_crs("EPSG:4326", "EPSG:3857", always_xy=True)
-            minx, miny, maxx, maxy = bbox
-            t_minx, t_miny = transformer.transform(minx, miny)
-            t_maxx, t_maxy = transformer.transform(maxx, maxy)
-            ax.set_xlim([t_minx, t_maxx])
-            ax.set_ylim([t_miny, t_maxy])
-        _expand_axes_limit_to_match_ratio(ax, map_width / map_height)
+
+        if bbox_axes_bounds:
+            left, bottom, right, top = bbox_axes_bounds
+            ax.set_xlim([left, right])
+            ax.set_ylim([bottom, top])
+
+        _expand_axes_limit_to_match_ratio(ax, ratio=map_ratio)
         # cx.add_basemap(
         #     ax,
         #     source=cx.providers.CartoDB.PositronNoLabels,
@@ -121,13 +136,43 @@ def _read_geoparquet_file(
     try:
         return gpd.read_parquet(path, bbox=bbox)
     except Exception:
-        gdf = gpd.read_parquet(path)
-        if bbox:
-            return gdf.clip_by_rect(*bbox)
-        return gdf
+        return gpd.read_parquet(path)
 
 
-def _expand_axes_limit_to_match_ratio(ax, ratio) -> None:
+def _expand_bbox_to_match_ratio(
+    bbox: list[float], ratio: float
+) -> tuple[tuple[float, float, float, float], tuple[float, float, float, float]]:
+    minx, miny, maxx, maxy = bbox
+
+    transformer = Transformer.from_crs("EPSG:4326", "EPSG:3857", always_xy=True)
+    left, bottom = transformer.transform(minx, miny)
+    right, top = transformer.transform(maxx, maxy)
+
+    width = right - left
+    height = top - bottom
+    current_ratio = width / height
+    if current_ratio < ratio:
+        new_width = (ratio / current_ratio) * width
+        width_padding = (new_width - width) / 2
+        left = left - width_padding
+        right = right + width_padding
+    else:
+        new_height = (current_ratio / ratio) * height
+        height_padding = (new_height - height) / 2
+        bottom = bottom - height_padding
+        top = top + height_padding
+
+    new_minx, new_miny = transformer.transform(
+        left, bottom, direction=TransformDirection.INVERSE
+    )
+    new_maxx, new_maxy = transformer.transform(
+        right, top, direction=TransformDirection.INVERSE
+    )
+
+    return (new_minx, new_miny, new_maxx, new_maxy), (left, bottom, right, top)
+
+
+def _expand_axes_limit_to_match_ratio(ax: Axes, ratio: float) -> None:
     left, right = ax.get_xlim()
     bottom, top = ax.get_ylim()
     width = right - left
