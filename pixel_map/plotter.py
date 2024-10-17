@@ -7,6 +7,7 @@ import img2unicode
 from matplotlib.axes import Axes
 import numpy as np
 from matplotlib import pyplot as plt
+from pyproj import Transformer
 from rich import get_console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from pyproj import Transformer
@@ -17,7 +18,7 @@ def plot_geo_data(files: list[str], bbox: Optional[list[float]] = None) -> None:
     console = get_console()
 
     terminal_width = console.width
-    terminal_height = console.height
+    terminal_height = console.height - 1
 
     map_width = terminal_width
     map_height = terminal_height * 2
@@ -72,18 +73,18 @@ def plot_geo_data(files: list[str], bbox: Optional[list[float]] = None) -> None:
         #     crs=3857,
         #     attribution=False,
         # )
-        # cx.add_basemap(
-        #     ax,
-        #     source=cx.providers.CartoDB.DarkMatterNoLabels,
-        #     crs=3857,
-        #     attribution=False,
-        # )
         cx.add_basemap(
             ax,
-            source=cx.providers.CartoDB.VoyagerNoLabels,
+            source=cx.providers.CartoDB.DarkMatterNoLabels,
             crs=3857,
             attribution=False,
         )
+        # cx.add_basemap(
+        #     ax,
+        #     source=cx.providers.CartoDB.VoyagerNoLabels,
+        #     crs=3857,
+        #     attribution=False,
+        # )
         f.tight_layout()
         canvas.draw()
         image_flat = np.frombuffer(canvas.tostring_rgb(), dtype="uint8")  # (H * W * 3,)
@@ -97,7 +98,11 @@ def plot_geo_data(files: list[str], bbox: Optional[list[float]] = None) -> None:
     ) as progress:
         progress.add_task("Rendering geo data", total=None)
         fast_renderer = img2unicode.Renderer(
+            # img2unicode.FastGenericDualOptimizer(),
+            # img2unicode.ExactGenericDualOptimizer("block"),
+            # img2unicode.FastQuadDualOptimizer(),
             img2unicode.FastGenericDualOptimizer("block"),
+            # img2unicode.FastGammaOptimizer("no_block"),
             max_h=terminal_height,
             max_w=terminal_width,
             allow_upscale=True,
