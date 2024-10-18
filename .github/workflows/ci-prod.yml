@@ -1,0 +1,31 @@
+name: "Build & publish - PROD"
+on:
+  release:
+    types: [released]
+
+jobs:
+  run-tests:
+    name: "Run tests job"
+    uses: ./.github/workflows/_tests.yml
+    secrets: inherit
+
+  build-n-publish:
+    name: Build and publish Python 🐍 distributions 📦 to PyPI
+    needs: [run-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.12
+      - uses: pdm-project/setup-pdm@v3
+        name: Setup PDM
+        with:
+          python-version: 3.12
+          architecture: x64
+          enable-pep582: true
+          cache: true
+          cache-dependency-path: "**/pdm.lock"
+      - name: Publish distribution 📦 to PyPI
+        run: pdm publish --repository pypi --username __token__ --password ${{ secrets.PYPI_API_TOKEN }} --verbose

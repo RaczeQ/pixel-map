@@ -10,9 +10,9 @@ dependencies = [
     "geopandas>=0.6",
     "numpy>=1.26.0",
     "shapely>=2",
-    "contextily>=1.6.2",
-    "matplotlib>=3.9.2",
-    "pillow>=11.0.0",
+    "contextily",
+    "matplotlib",
+    "pillow",
     "pyarrow>=16.0.0",
 ]
 requires-python = ">=3.9"
@@ -34,7 +34,110 @@ distribution = true
 dev = ["bumpver", "types-requests", "setuptools>=45.0.0"]
 # pdm add -dG lint <library>
 lint = ["pre-commit>=4", "mypy>=1", "docformatter[tomli]", "ruff>=0.1.0"]
-
+# pdm add -dG test <library>
+test = [
+    "pytest>=7.0.0",
+    "tox-pdm>=0.7.2",
+    "pytest-mock>=3.3.0",
+    "requests-mock>=1.12.1",
+    "pytest-check>=2.3.1",
+    "pytest-parametrization>=2022.2.1",
+]
 
 [tool.pdm.scripts]
 post_install = "pre-commit install"
+
+[tool.black]
+line-length = 100
+target-version = ["py39", "py310", "py311", "py312"]
+preview = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+extend-exclude = ["old"]
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "W",   # pycodestyle
+    "F",   # pyflakes
+    "UP",  # pyupgrade
+    "D",   # pydocstyle
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "NPY", # NumPy
+    "YTT", # flake8-2020
+    "Q",   # flake8-quotes
+    "PLE",
+    "PLW", # pylint (add "PLR" in the future)
+    "PIE", # misc lints
+    "TID", # tidy imports
+    "ISC", # implicit string concatenation
+    "TCH", # type-checking imports
+    # "N",            # pep8-naming
+    # "ANN",          # flake8-annotations
+]
+ignore = ["D212"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.pycodestyle]
+max-doc-length = 100
+
+[tool.mypy]
+strict = true
+show_column_numbers = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+check_untyped_defs = true
+warn_return_any = true
+
+[tool.docformatter]
+syntax = 'google'
+black = true
+recursive = true
+wrap-summaries = 100
+wrap-descriptions = 100
+# force-wrap = false # uncomment after https://github.com/PyCQA/docformatter/issues/68 is resolved
+tab-width = 4
+blank = false
+pre-summary-newline = true
+close-quotes-on-newline = true
+wrap-one-line = true
+
+[tool.bumpver]
+current_version = "0.0.1"
+version_pattern = "MAJOR.MINOR.PATCH[PYTAGNUM]"
+commit_message = "chore(CI/CD): bump version {old_version} -> {new_version}"
+commit = true
+tag = false
+push = false
+
+[tool.bumpver.file_patterns]
+"pyproject.toml" = [
+    '^current_version = "{version}"$',
+    '^version = "{version}"$',
+]
+"pixel_map/__init__.py" = ['^__version__ = "{version}"$']
+
+[tool.pytest.ini_options]
+addopts = ["--import-mode=importlib"]
+markers = ["slow: marks tests as slow (deselect with '-m \"not slow\"')"]
+log_cli = true
+doctest_optionflags = [
+    'ELLIPSIS',
+    'NORMALIZE_WHITESPACE',
+    'IGNORE_EXCEPTION_DETAIL',
+]
+
+[tool.licensecheck]
+using = "requirements"
+zero = false
+ignore_licenses = ["UNKNOWN"]
+# ignore_packages = [
+#     'docformatter',   # uses MIT license, has mismatched license in analysis
+#     'mkdocs-jupyter', # uses Apache-2.0 license, has mismatched license in analysis
+#     'python-geohash', # uses both MIT and Apache-2.0 licenses, has mismatched license in analysis
+# ]
