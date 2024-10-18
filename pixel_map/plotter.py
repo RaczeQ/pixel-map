@@ -17,7 +17,10 @@ from matplotlib.axes import Axes
 from pyproj import Transformer
 from pyproj.enums import TransformDirection
 from rich import get_console
+from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
+
+TRANSFORMER = Transformer.from_crs("EPSG:4326", "EPSG:3857", always_xy=True)
 
 
 def plot_geo_data(
@@ -36,8 +39,11 @@ def plot_geo_data(
     """
     console = get_console()
 
-    terminal_width = console.width
-    terminal_height = console.height - 1
+    # terminal_width = console.width
+    # terminal_height = console.height - 1
+
+    terminal_width = console.width - 2
+    terminal_height = console.height - 3
 
     map_width = terminal_width
     map_height = terminal_height * 2
@@ -76,7 +82,8 @@ def plot_geo_data(
         f, ax = plt.subplots(figsize=(map_width, map_height), dpi=10)
         f.patch.set_facecolor("black")
         canvas = f.canvas
-        gdf.to_crs(3857).plot(ax=ax, alpha=0.4)
+        # gdf.to_crs(3857).plot(ax=ax, alpha=0.4)
+        gdf.to_crs(3857).plot(ax=ax)
         ax.axis("off")
         ax.margins(0)
 
@@ -85,7 +92,7 @@ def plot_geo_data(
             ax.set_xlim([left, right])
             ax.set_ylim([bottom, top])
 
-        _expand_axes_limit_to_match_ratio(ax, ratio=map_ratio)
+        left, bottom, right, top = _expand_axes_limit_to_match_ratio(ax, ratio=map_ratio)
         # cx.add_basemap(
         #     ax,
         #     source=cx.providers.CartoDB.PositronNoLabels,
@@ -137,7 +144,27 @@ def plot_geo_data(
         full_rich_string = _construct_full_rich_string(
             characters, foreground_colors, background_colors
         )
-    console.print(full_rich_string)
+    # with Live(console=console, auto_refresh=False, screen=True, transient=False) as live:
+    # # my_console.print("[bold blue]Starting work!")
+    map_minx, map_miny = TRANSFORMER.transform(left, bottom, direction=TransformDirection.INVERSE)
+    map_maxx, map_maxy = TRANSFORMER.transform(right, top, direction=TransformDirection.INVERSE)
+    file_paths = [Path(f).name for f in files]
+    title = file_paths[0]
+
+    if len(file_paths) == 2:
+        title = f"{file_paths[0]} + 1 other file"
+    elif len(file_paths) > 2:
+        title = f"{file_paths[0]} + {len(file_paths) - 1} other files"
+
+    console.print(
+        Panel(
+            full_rich_string,
+            padding=0,
+            title=title,
+            subtitle=f"BBOX: {map_minx:.5f},{map_miny:.5f},{map_maxx:.5f},{map_maxy:.5f}",
+        )
+    )
+    # console.print(full_rich_string)
 
 
 def _load_geo_data(
@@ -170,9 +197,8 @@ def _expand_bbox_to_match_ratio(
 ) -> tuple[tuple[float, float, float, float], tuple[float, float, float, float]]:
     minx, miny, maxx, maxy = bbox
 
-    transformer = Transformer.from_crs("EPSG:4326", "EPSG:3857", always_xy=True)
-    left, bottom = transformer.transform(minx, miny)
-    right, top = transformer.transform(maxx, maxy)
+    left, bottom = TRANSFORMER.transform(minx, miny)
+    right, top = TRANSFORMER.transform(maxx, maxy)
 
     width = right - left
     height = top - bottom
@@ -188,13 +214,13 @@ def _expand_bbox_to_match_ratio(
         bottom = bottom - height_padding
         top = top + height_padding
 
-    new_minx, new_miny = transformer.transform(left, bottom, direction=TransformDirection.INVERSE)
-    new_maxx, new_maxy = transformer.transform(right, top, direction=TransformDirection.INVERSE)
+    new_minx, new_miny = TRANSFORMER.transform(left, bottom, direction=TransformDirection.INVERSE)
+    new_maxx, new_maxy = TRANSFORMER.transform(right, top, direction=TransformDirection.INVERSE)
 
     return (new_minx, new_miny, new_maxx, new_maxy), (left, bottom, right, top)
 
 
-def _expand_axes_limit_to_match_ratio(ax: Axes, ratio: float) -> None:
+def _expand_axes_limit_to_match_ratio(ax: Axes, ratio: float) -> tuple[float, float, float, float]:
     left, right = ax.get_xlim()
     bottom, top = ax.get_ylim()
     width = right - left
@@ -212,6 +238,8 @@ def _expand_axes_limit_to_match_ratio(ax: Axes, ratio: float) -> None:
         bottom = bottom - height_padding
         top = top + height_padding
         ax.set_ylim([bottom, top])
+
+    return left, bottom, right, top
 
 
 def _construct_full_rich_string(
