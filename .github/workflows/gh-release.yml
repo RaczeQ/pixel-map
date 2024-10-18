@@ -28,6 +28,8 @@ jobs:
             gh run cancel ${{ github.run_id }}
             gh run watch ${{ github.run_id }}
           fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Configure Git user
         run: |
           git config user.name "${{ github.actor }}"
