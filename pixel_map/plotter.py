@@ -17,6 +17,7 @@ from matplotlib.axes import Axes
 from pyproj import Transformer
 from pyproj.enums import TransformDirection
 from rich import get_console
+from rich.box import HEAVY
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
@@ -162,6 +163,7 @@ def plot_geo_data(
             padding=0,
             title=title,
             subtitle=f"BBOX: {map_minx:.5f},{map_miny:.5f},{map_maxx:.5f},{map_maxy:.5f}",
+            box=HEAVY,
         )
     )
     # console.print(full_rich_string)
