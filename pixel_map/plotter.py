@@ -121,7 +121,7 @@ def plot_geo_data(
             # img2unicode.ExactGenericDualOptimizer("block"),
             # img2unicode.FastQuadDualOptimizer(),
             img2unicode.FastGenericDualOptimizer("block"),
-            # img2unicode.FastGammaOptimizer("no_block"),
+            # img2unicode.ExactGammaOptimizer("no_block"),
             max_h=terminal_height,
             max_w=terminal_width,
             allow_upscale=True,
