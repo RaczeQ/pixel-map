@@ -1,19 +1,39 @@
+"""
+Plotting functionality.
+
+Generates a Matplotlib canvas that is rendered to an image and later transformed into a list of
+unicode characters.
+"""
+
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import contextily as cx
 import geopandas as gpd
 import img2unicode
-from matplotlib.axes import Axes
 import numpy as np
 from matplotlib import pyplot as plt
+from matplotlib.axes import Axes
 from pyproj import Transformer
+from pyproj.enums import TransformDirection
 from rich import get_console
 from rich.progress import Progress, SpinnerColumn, TextColumn
-from pyproj.enums import TransformDirection
 
 
-def plot_geo_data(files: list[str], bbox: Optional[tuple[float, float, float, float]] = None) -> None:
+def plot_geo_data(
+    files: list[str], bbox: Optional[tuple[float, float, float, float]] = None
+) -> None:
+    """
+    Plot a geo data into a terminal.
+
+    Generates a Matplotlib canvas that is rendered to an image and later transformed into a list of
+    unicode characters.
+
+    Args:
+        files (list[str]): List of files to plot.
+        bbox (Optional[tuple[float, float, float, float]], optional): Bounding box used to clip the
+            geo data. Defaults to None.
+    """
     console = get_console()
 
     terminal_width = console.width
@@ -106,15 +126,17 @@ def plot_geo_data(files: list[str], bbox: Optional[tuple[float, float, float, fl
             max_w=terminal_width,
             allow_upscale=True,
         )
-        chars, fgs, bgs = fast_renderer.render_numpy(image)
+        characters, foreground_colors, background_colors = fast_renderer.render_numpy(image)
         # braille_renderer = img2unicode.GammaRenderer(
         #     img2unicode.BestGammaOptimizer(True, "braille"),
         #     max_h=terminal_height,
         #     max_w=terminal_width,
         #     allow_upscale=True,
         # )
-        # chars, fgs, bgs = braille_renderer.render_numpy(image)
-        full_rich_string = _construct_full_rich_string(chars, fgs, bgs)
+        # characters, foreground_colors, background_colors  = braille_renderer.render_numpy(image)
+        full_rich_string = _construct_full_rich_string(
+            characters, foreground_colors, background_colors
+        )
     console.print(full_rich_string)
 
 
@@ -166,12 +188,8 @@ def _expand_bbox_to_match_ratio(
         bottom = bottom - height_padding
         top = top + height_padding
 
-    new_minx, new_miny = transformer.transform(
-        left, bottom, direction=TransformDirection.INVERSE
-    )
-    new_maxx, new_maxy = transformer.transform(
-        right, top, direction=TransformDirection.INVERSE
-    )
+    new_minx, new_miny = transformer.transform(left, bottom, direction=TransformDirection.INVERSE)
+    new_maxx, new_maxy = transformer.transform(right, top, direction=TransformDirection.INVERSE)
 
     return (new_minx, new_miny, new_maxx, new_maxy), (left, bottom, right, top)
 
@@ -196,15 +214,19 @@ def _expand_axes_limit_to_match_ratio(ax: Axes, ratio: float) -> None:
         ax.set_ylim([bottom, top])
 
 
-def _construct_full_rich_string(chars, fgs, bgs):
+def _construct_full_rich_string(
+    characters: Any, foreground_colors: Any, background_colors: Any
+) -> str:
     result = ""
-    for y in range(chars.shape[0]):
-        for x in range(chars.shape[1]):
+    for y in range(characters.shape[0]):
+        for x in range(characters.shape[1]):
             idx = y, x
-            res = chars[idx]
+            res = characters[idx]
             char = chr(res)
-            fg_color = ",".join(map(str, fgs[idx]))
-            bg_color = ",".join(map(str, bgs[idx]))
-            result += f"[rgb({fg_color}) ON rgb({bg_color})]{char}[/rgb({fg_color}) ON rgb({bg_color})]"
+            fg_color = ",".join(map(str, foreground_colors[idx]))
+            bg_color = ",".join(map(str, background_colors[idx]))
+            result += (
+                f"[rgb({fg_color}) ON rgb({bg_color})]{char}[/rgb({fg_color}) ON rgb({bg_color})]"
+            )
         result += "\n"
     return result[:-1]

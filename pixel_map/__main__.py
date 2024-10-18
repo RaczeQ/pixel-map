@@ -13,7 +13,8 @@ app = typer.Typer(
 
 # TODO:
 # - add option to select colours (pass list - must match number of files)
-# - add option to select colours per type (polygon, linestring, point) (pass list(s) - must match number of files)
+# - add option to select colours per type (polygon, linestring, point)
+#   (pass list(s) - must match number of files)
 # - define default colour schemes with option to select
 #       --light (positron + blue)
 #       or --dark (darkmatter + orange?) [default]
@@ -29,7 +30,7 @@ def _version_callback(value: bool) -> None:
 
 
 class BboxGeometryParser(click.ParamType):  # type: ignore
-    """Parser for geometry in WKT form."""
+    """Parser for bounding boxes."""
 
     name = "BBOX"
 
@@ -37,16 +38,19 @@ class BboxGeometryParser(click.ParamType):  # type: ignore
         """Convert parameter value."""
         try:
             bbox_values = tuple(float(x.strip()) for x in value.split(","))
-            return bbox_values
+            if len(bbox_values) == 4:
+                return bbox_values
         except ValueError:  # ValueError raised when passing non-numbers to float()
-            raise typer.BadParameter(
-                "Cannot parse provided bounding box."
-                " Valid value must contain 4 floating point numbers"
-                " separated by commas."
-            ) from None
+            pass
+
+        raise typer.BadParameter(
+            "Cannot parse provided bounding box."
+            " Valid value must contain 4 floating point numbers"
+            " separated by commas."
+        ) from None
 
 
-@app.command()
+@app.command() # type: ignore
 def plot(
     files: Annotated[
         list[str],
@@ -77,8 +81,10 @@ def plot(
         ),
     ] = None,
 ) -> None:
-    from pixel_map.plotter import plot_geo_data
+    """Plot the geodata in the terminal."""
     import warnings
+
+    from pixel_map.plotter import plot_geo_data
 
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore")
@@ -88,6 +94,7 @@ def plot(
 
 
 def main() -> None:
+    """Run the CLI."""
     app(prog_name=__app_name__)  # pragma: no cover
 
 
