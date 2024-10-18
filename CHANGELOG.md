@@ -9,14 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.1] - 2024-10-18
 
-## [0.1.0] - 2024-10-18
-
 ### Added
 
 - Plotting basic functionality with CLI
 
 [Unreleased]: https://github.com/RaczeQ/pixel-map/compare/0.1.1...HEAD
 
-[0.1.1]: https://github.com/RaczeQ/pixel-map/compare/0.1.0...0.1.1
-
-[0.1.0]: https://github.com/RaczeQ/pixel-map/releases/tag/0.1.0
+[0.1.1]: https://github.com/RaczeQ/pixel-map/releases/tag/0.1.1
