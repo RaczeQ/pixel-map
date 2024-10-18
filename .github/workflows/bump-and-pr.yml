@@ -65,6 +65,7 @@ jobs:
           labels: release
           base: main
           body: ${{ steps.changelog.outputs.release-notes }}
+          token: ${{ secrets.CICD_PAT_TOKEN }}
           author: "${{ github.actor }} <${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com>"
           committer: "${{ github.actor }} <${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com>"
           commit-message: "docs: update CHANGELOG.md"
