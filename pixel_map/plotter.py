@@ -25,10 +25,12 @@ TRANSFORMER = Transformer.from_crs("EPSG:4326", "EPSG:3857", always_xy=True)
 
 
 def plot_geo_data(
-    files: list[str], bbox: Optional[tuple[float, float, float, float]] = None
+    files: list[str],
+    bbox: Optional[tuple[float, float, float, float]] = None,
+    no_border: bool = False,
 ) -> None:
     """
-    Plot a geo data into a terminal.
+    Plot the geo data into a terminal.
 
     Generates a Matplotlib canvas that is rendered to an image and later transformed into a list of
     unicode characters.
@@ -37,14 +39,16 @@ def plot_geo_data(
         files (list[str]): List of files to plot.
         bbox (Optional[tuple[float, float, float, float]], optional): Bounding box used to clip the
             geo data. Defaults to None.
+        no_border (Optional[bool], optional): Removes the border around the map. Defaults to False.
     """
     console = get_console()
 
-    # terminal_width = console.width
-    # terminal_height = console.height - 1
-
-    terminal_width = console.width - 2
-    terminal_height = console.height - 3
+    if no_border:
+        terminal_width = console.width
+        terminal_height = console.height - 1
+    else:
+        terminal_width = console.width - 2
+        terminal_height = console.height - 3  # 2 for panel and 1 for new line
 
     map_width = terminal_width
     map_height = terminal_height * 2
@@ -145,28 +149,24 @@ def plot_geo_data(
         full_rich_string = _construct_full_rich_string(
             characters, foreground_colors, background_colors
         )
-    # with Live(console=console, auto_refresh=False, screen=True, transient=False) as live:
-    # # my_console.print("[bold blue]Starting work!")
+
     map_minx, map_miny = TRANSFORMER.transform(left, bottom, direction=TransformDirection.INVERSE)
     map_maxx, map_maxy = TRANSFORMER.transform(right, top, direction=TransformDirection.INVERSE)
-    file_paths = [Path(f).name for f in files]
-    title = file_paths[0]
 
-    if len(file_paths) == 2:
-        title = f"{file_paths[0]} + 1 other file"
-    elif len(file_paths) > 2:
-        title = f"{file_paths[0]} + {len(file_paths) - 1} other files"
+    if no_border:
+        console.print(full_rich_string)
+    else:
+        title = _generate_panel_title(files, terminal_width)
 
-    console.print(
-        Panel(
-            full_rich_string,
-            padding=0,
-            title=title,
-            subtitle=f"BBOX: {map_minx:.5f},{map_miny:.5f},{map_maxx:.5f},{map_maxy:.5f}",
-            box=HEAVY,
+        console.print(
+            Panel.fit(
+                full_rich_string,
+                padding=0,
+                title=title,
+                subtitle=f"BBOX: {map_minx:.5f},{map_miny:.5f},{map_maxx:.5f},{map_maxy:.5f}",
+                box=HEAVY,
+            )
         )
-    )
-    # console.print(full_rich_string)
 
 
 def _load_geo_data(
@@ -260,3 +260,33 @@ def _construct_full_rich_string(
             )
         result += "\n"
     return result[:-1]
+
+
+def _generate_panel_title(files: list[str], terminal_width: int) -> str:
+    file_paths = [Path(f).name for f in files]
+
+    if len(file_paths) == 1:
+        title = "1 file"
+    else:
+        title = f"{len(file_paths)} files"
+
+    file_names_in_title = []
+    file_names_left = file_paths
+    while file_names_left:
+        current_file_name = file_names_left.pop(0)
+        file_names_in_title.append(current_file_name)
+        titles_joined = ", ".join(file_names_in_title)
+        titles_left = len(file_names_left)
+        if titles_left == 0:
+            new_title = titles_joined
+        elif titles_left == 1:
+            new_title = f"{titles_joined} + 1 other file"
+        else:
+            new_title = f"{titles_joined} + {titles_left} other files"
+
+        if len(new_title) > (terminal_width - 4):
+            break
+
+        title = new_title
+
+    return title

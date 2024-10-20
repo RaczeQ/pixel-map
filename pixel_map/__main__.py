@@ -7,9 +7,12 @@ import typer
 
 from pixel_map import __app_name__, __version__
 
-app = typer.Typer(
-    context_settings={"help_option_names": ["-h", "--help"]}, rich_markup_mode="rich"
+VALID_EXAMPLE_FILES = ["london_buildings", "london_park", "london_water", "monaco_buildings"]
+example_files_help_string = ", ".join(
+    f"[bold dark_orange]{example}[/bold dark_orange]" for example in VALID_EXAMPLE_FILES
 )
+
+app = typer.Typer(context_settings={"help_option_names": ["-h", "--help"]}, rich_markup_mode="rich")
 
 # TODO:
 # - add option to select colours (pass list - must match number of files)
@@ -21,6 +24,7 @@ app = typer.Typer(
 #       or --street (voyager + ???)
 # - add option to select tileset (or no tileset) by name
 # - add option to pass map height and width
+# - add option to remove the panel (border)
 
 
 def _version_callback(value: bool) -> None:
@@ -50,7 +54,7 @@ class BboxGeometryParser(click.ParamType):  # type: ignore
         ) from None
 
 
-@app.command() # type: ignore
+@app.command()  # type: ignore
 def plot(
     files: Annotated[
         list[str],
@@ -70,6 +74,27 @@ def plot(
             show_default=False,
         ),
     ] = None,
+    no_border: Annotated[
+        bool,
+        typer.Option(
+            "--no-border/",
+            "--fullscreen/",
+            help=("Removes the border around the map."),
+            show_default=False,
+        ),
+    ] = False,
+    example_files: Annotated[
+        bool,
+        typer.Option(
+            "--example/",
+            "--example-files/",
+            help=(
+                "Can be used to load one of example files based on name."
+                f" Possible values: {example_files_help_string}."
+            ),
+            show_default=False,
+        ),
+    ] = False,
     version: Annotated[
         Optional[bool],
         typer.Option(
@@ -81,15 +106,34 @@ def plot(
         ),
     ] = None,
 ) -> None:
-    """Plot the geodata in the terminal."""
+    """
+    Plot the geo data into a terminal.
+
+    Generates a Matplotlib canvas that is rendered to an image and later transformed into a list of
+    unicode characters.
+    """
     import warnings
 
     from pixel_map.plotter import plot_geo_data
 
+    if example_files:
+        from pathlib import Path
+
+        loaded_example_files = []
+        for file_name in files:
+            if file_name not in VALID_EXAMPLE_FILES:
+                raise typer.BadParameter(
+                    f"Provided file {file_name} doesn't exist in examples."
+                ) from None
+            loaded_example_files.append(
+                (Path(__file__).parent / "example_files" / f"{file_name}.parquet").as_posix()
+            )
+        files = loaded_example_files
+
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore")
         plot_geo_data(
-            files, bbox=cast(Optional[tuple[float, float, float, float]], bbox)
+            files, bbox=cast(Optional[tuple[float, float, float, float]], bbox), no_border=no_border
         )
 
 
