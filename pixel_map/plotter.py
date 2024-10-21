@@ -6,7 +6,7 @@ unicode characters.
 """
 
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 import contextily as cx
 import geopandas as gpd
@@ -27,14 +27,15 @@ from pixel_map.renderers import AVAILABLE_RENDERERS
 
 TRANSFORMER = Transformer.from_crs("EPSG:4326", "EPSG:3857", always_xy=True)
 
-# TODO:
-# - change geopandas loading to get multiple dfs instead of one
-# - add option to load contextily from string or name
 
 def plot_geo_data(
     files: list[str],
     renderer: str,
     bbox: Optional[tuple[float, float, float, float]] = None,
+    color: Union[str, list[str]] = "C0",
+    alpha: Union[float, list[float]] = 1.0,
+    basemap_provider: Optional[str] = None,
+    background_color: Optional[str] = None,
     no_border: bool = False,
 ) -> None:
     """
@@ -49,7 +50,15 @@ def plot_geo_data(
             Defaults to "block".
         bbox (Optional[tuple[float, float, float, float]], optional): Bounding box used to clip the
             geo data. Defaults to None.
-        no_border (Optional[bool], optional): Removes the border around the map. Defaults to False.
+        color (Union[str, list[str]], optional): Color or list of colors used to plot geo data.
+            If a list, must be the same length as a number of files. Defaults to "C0".
+        alpha (Union[str, list[float]], optional): Opacity or list of opacities used to plot
+            geo data.  If a list, must be the same length as a number of files. Defaults to 1.
+        basemap_provider (str, optional): A basemap used to plot under the geo data.
+            Defaults to None.
+        background_color (str, optional): Background color. Used then basemap_provider is None.
+            Defaults to None.
+        no_border (bool, optional): Removes the border around the map. Defaults to False.
     """
     console = get_console()
 
@@ -83,9 +92,9 @@ def plot_geo_data(
         console=console,
     ) as progress:
         progress.add_task("Loading Geo data", total=None)
-        gdf = _load_geo_data(files, bbox=bbox)
+        gdfs = _load_geo_data(files, bbox=bbox)
         if bbox:
-            gdf = gdf.clip_by_rect(*bbox)
+            gdfs = [gdf.clip_by_rect(*bbox) for gdf in gdfs]
 
     with Progress(
         SpinnerColumn(),
@@ -95,12 +104,18 @@ def plot_geo_data(
     ) as progress:
         progress.add_task("Plotting geo data", total=None)
         f, ax = plt.subplots(figsize=(map_width, map_height), dpi=10)
-        f.patch.set_facecolor("black")
+        f.patch.set_facecolor(background_color)
         canvas = f.canvas
         # gdf.to_crs(3857).plot(ax=ax, alpha=0.4)
-        gdf.to_crs(3857).plot(ax=ax)
+        if isinstance(color, str):
+            color = [color]
+        if isinstance(alpha, (int, float)):
+            alpha = [alpha]
+        for idx, gdf in enumerate(gdfs):
+            plot_color = color[idx % len(color)]
+            plot_alpha = alpha[idx % len(alpha)]
+            gdf.to_crs(3857).plot(ax=ax, color=plot_color, alpha=plot_alpha)
         ax.axis("off")
-        ax.margins(0)
 
         if bbox_axes_bounds:
             left, bottom, right, top = bbox_axes_bounds
@@ -108,25 +123,16 @@ def plot_geo_data(
             ax.set_ylim([bottom, top])
 
         left, bottom, right, top = _expand_axes_limit_to_match_ratio(ax, ratio=map_ratio)
-        # cx.add_basemap(
-        #     ax,
-        #     source=cx.providers.CartoDB.PositronNoLabels,
-        #     crs=3857,
-        #     attribution=False,
-        # )
-        cx.add_basemap(
-            ax,
-            source=cx.providers.CartoDB.DarkMatterNoLabels,
-            crs=3857,
-            attribution=False,
-        )
-        # cx.add_basemap(
-        #     ax,
-        #     source=cx.providers.CartoDB.VoyagerNoLabels,
-        #     crs=3857,
-        #     attribution=False,
-        # )
-        f.tight_layout()
+
+        if basemap_provider:
+            cx.add_basemap(
+                ax,
+                source=basemap_provider,
+                crs=3857,
+                attribution=False,
+            )
+
+        ax.set_position((0, 0, 1, 1))
         canvas.draw()
         image_flat = np.frombuffer(canvas.tostring_rgb(), dtype="uint8")  # (H * W * 3,)
         image = image_flat.reshape(*reversed(canvas.get_width_height()), 3)
@@ -146,39 +152,52 @@ def plot_geo_data(
             characters, foreground_colors, background_colors
         )
 
-    map_minx, map_miny = TRANSFORMER.transform(left, bottom, direction=TransformDirection.INVERSE)
-    map_maxx, map_maxy = TRANSFORMER.transform(right, top, direction=TransformDirection.INVERSE)
-
     if no_border:
         console.print(full_rich_string)
     else:
         title = _generate_panel_title(files, terminal_width)
+
+        map_minx, map_miny = TRANSFORMER.transform(
+            left, bottom, direction=TransformDirection.INVERSE
+        )
+        map_maxx, map_maxy = TRANSFORMER.transform(right, top, direction=TransformDirection.INVERSE)
+        subtitle = _generate_panel_subtitle(
+            map_minx, map_miny, map_maxx, map_maxy, terminal_width, terminal_height
+        )
 
         console.print(
             Panel.fit(
                 full_rich_string,
                 padding=0,
                 title=title,
-                subtitle=f"BBOX: {map_minx:.5f},{map_miny:.5f},{map_maxx:.5f},{map_maxy:.5f}",
+                subtitle=subtitle,
                 box=HEAVY,
             )
         )
 
 
+def get_predefined_dark_style() -> tuple[str, str]:
+    """Get default background and color for dark style."""
+    return "CartoDB.DarkMatterNoLabels", "C1"
+
+
+def get_predefined_light_style() -> tuple[str, str]:
+    """Get default background and color for light style."""
+    return "CartoDB.PositronNoLabels", "C0"
+
+
 def _load_geo_data(
     files: list[str], bbox: Optional[tuple[float, float, float, float]] = None
-) -> gpd.GeoSeries:
+) -> list[gpd.GeoSeries]:
     paths = [Path(file_path) for file_path in files]
-    return gpd.pd.concat(
-        [
-            (
-                _read_geoparquet_file(path, bbox=bbox).geometry
-                if path.suffix == ".parquet"
-                else gpd.read_file(path, bbox=bbox).geometry
-            )
-            for path in paths
-        ]
-    )
+    return [
+        (
+            _read_geoparquet_file(path, bbox=bbox).geometry
+            if path.suffix == ".parquet"
+            else gpd.read_file(path, bbox=bbox).geometry
+        )
+        for path in paths
+    ]
 
 
 def _read_geoparquet_file(
@@ -289,3 +308,19 @@ def _generate_panel_title(files: list[str], terminal_width: int) -> str:
         title = new_title
 
     return title
+
+
+def _generate_panel_subtitle(
+    minx: float, miny: float, maxx: float, maxy: float, terminal_width: int, terminal_height: int
+) -> str:
+    bbox_str = f"BBOX: {minx:.5f},{miny:.5f},{maxx:.5f},{maxy:.5f}"
+    terminal_wh_str = f"MAP W:{terminal_width} H:{terminal_height}"
+
+    subtitle = f"{bbox_str} | {terminal_wh_str}"
+
+    if len(subtitle) <= (terminal_width - 4):
+        return subtitle
+    elif len(bbox_str) <= (terminal_width - 4):
+        return bbox_str
+    else:
+        return ""

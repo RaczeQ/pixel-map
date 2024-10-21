@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Option to change colors
+- Option to change opacity
+- Option to change basemap
+- Default light and dark style
+- Single letter flags to the CLI
+
+### Changed
+
+- Subtitle rendering
+
+### Fixed
+
+- Canvas not filling the space fully
+
 ## [0.1.2] - 2024-10-21
 
 ### Added

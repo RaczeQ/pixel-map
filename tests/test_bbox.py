@@ -7,7 +7,7 @@ import pytest
 import typer
 from parametrization import Parametrization as P
 
-from pixel_map.__main__ import BboxGeometryParser
+from pixel_map.__main__ import BboxParser
 
 
 @P.parameters("value", "expectation")  # type: ignore
@@ -44,6 +44,6 @@ from pixel_map.__main__ import BboxGeometryParser
 def test_bbox_loading(value: str, expectation: Any) -> None:
     """Test if extracts finding by name works."""
     with expectation:
-        bbox = BboxGeometryParser().convert(value)  # type: ignore[no-untyped-call]
+        bbox = BboxParser().convert(value)  # type: ignore[no-untyped-call]
         assert len(bbox) == 4
         assert all(isinstance(v, float) for v in bbox)

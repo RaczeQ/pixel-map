@@ -39,14 +39,14 @@ def _version_callback(value: bool) -> None:
         raise typer.Exit()
 
 
-class BboxGeometryParser(click.ParamType):  # type: ignore
+class BboxParser(click.ParamType):  # type: ignore
     """Parser for bounding boxes."""
 
     name = "BBOX"
 
     def convert(self, value, param=None, ctx=None):  # type: ignore
         """Convert parameter value."""
-        with suppress(ValueError): # ValueError raised when passing non-numbers to float()
+        with suppress(ValueError):  # ValueError raised when passing non-numbers to float()
             bbox_values = tuple(float(x.strip()) for x in value.split(","))
             if len(bbox_values) == 4:
                 return bbox_values
@@ -54,6 +54,36 @@ class BboxGeometryParser(click.ParamType):  # type: ignore
         raise typer.BadParameter(
             "Cannot parse provided bounding box."
             " Valid value must contain 4 floating point numbers"
+            " separated by commas."
+        ) from None
+
+
+class ColorParser(click.ParamType):  # type: ignore
+    """Parser for colours."""
+
+    name = "COLOR"
+
+    def convert(self, value, param=None, ctx=None):  # type: ignore
+        """Convert parameter value."""
+        with suppress(ValueError):  # ValueError raised when passing non-numbers to float()
+            colors = [x.strip() for x in value.split(",")]
+            return colors
+
+
+class AlphaParser(click.ParamType):  # type: ignore
+    """Parser for bounding boxes."""
+
+    name = "FLOAT"
+
+    def convert(self, value, param=None, ctx=None):  # type: ignore
+        """Convert parameter value."""
+        with suppress(ValueError):  # ValueError raised when passing non-numbers to float()
+            alpha_values = [float(x.strip()) for x in value.split(",")]
+            return alpha_values
+
+        raise typer.BadParameter(
+            "Cannot parse provided alpha values."
+            " Valid value must contain floating point numbers"
             " separated by commas."
         ) from None
 
@@ -70,11 +100,13 @@ def plot(
     bbox: Annotated[
         Optional[str],
         typer.Option(
+            "--bbox",
+            "-b",
             help=(
                 "Clip the map to a given [bold dark_orange]bounding box[/bold dark_orange]."
                 " Expects 4 floating point numbers separated by commas."
             ),
-            click_type=BboxGeometryParser(),
+            click_type=BboxParser(),
             show_default=False,
         ),
     ] = None,
@@ -92,15 +124,82 @@ def plot(
             is_eager=True,
         ),
     ] = "block",
+    is_dark_style: Annotated[
+        bool,
+        typer.Option(
+            "--dark/--light",
+            help=(
+                "Uses the predefined dark or light style. Can be overriden with user defined style."
+            ),
+            show_default=True,
+        ),
+    ] = True,
+    colors: Annotated[
+        Optional[str],
+        typer.Option(
+            "--color",
+            "-c",
+            help=("Pass color or list of colours per each geo file."),
+            click_type=ColorParser(),
+            show_default=False,
+        ),
+    ] = None,
+    alphas: Annotated[
+        Optional[str],
+        typer.Option(
+            "--alpha",
+            "--opacity",
+            "-a",
+            help=("Pass opacity or list of opacities per each geo file."),
+            click_type=AlphaParser(),
+            show_default=False,
+        ),
+    ] = None,
+    basemap_provider: Annotated[
+        Optional[str],
+        typer.Option(
+            "--basemap",
+            "--tileset",
+            "-t",
+            metavar="TILES",
+            help=(
+                "Set the basemap provider. Can be any value parsed by xyzservices library."
+                " Defaults to [bold dark_orange]CartoDB.DarkMatterNoLabels[/bold dark_orange]"
+                " if --dark or [bold dark_orange]CartoDB.PositronNoLabels[/bold dark_orange]"
+                " if --light."
+            ),
+            show_default=False,
+        ),
+    ] = None,
     no_border: Annotated[
         bool,
         typer.Option(
             "--no-border/",
             "--fullscreen/",
+            "-f/",
             help=("Removes the border around the map."),
             show_default=False,
         ),
     ] = False,
+    no_background: Annotated[
+        bool,
+        typer.Option(
+            "--no-background/",
+            "--no-bg/",
+            help=("Removes the background of the map and plots only geo data."),
+            show_default=False,
+        ),
+    ] = False,
+    background_color: Annotated[
+        Optional[str],
+        typer.Option(
+            "--background-color",
+            "--bg-color",
+            metavar="COLOR",
+            help=("Set the background color. Can be used together with --no-background."),
+            show_default=False,
+        ),
+    ] = None,
     example_files: Annotated[
         bool,
         typer.Option(
@@ -132,7 +231,11 @@ def plot(
     """
     import warnings
 
-    from pixel_map.plotter import plot_geo_data
+    from pixel_map.plotter import (
+        get_predefined_dark_style,
+        get_predefined_light_style,
+        plot_geo_data,
+    )
 
     if renderer not in AVAILABLE_RENDERERS:
         raise typer.BadParameter(f"Provided renderer {renderer} doesn't exist.") from None
@@ -151,12 +254,46 @@ def plot(
             )
         files = loaded_example_files
 
+    if is_dark_style:
+        provider, color = get_predefined_dark_style()
+    else:
+        provider, color = get_predefined_light_style()
+
+    if not basemap_provider:
+        basemap_provider = provider
+
+    parsed_colors: Optional[list[str]] = colors # type: ignore[assignment]
+    if not parsed_colors:
+        parsed_colors = [color]
+
+    parsed_alphas: Optional[list[float]] = alphas # type: ignore[assignment]
+    if not parsed_alphas:
+        parsed_alphas = [1]
+
+    if len(parsed_colors) > 1 and len(parsed_colors) != len(files):
+        raise typer.BadParameter(
+            f"Number of colors ({len(parsed_colors)}) and geo files ({len(files)}) doesn't match."
+        ) from None
+
+    if len(parsed_alphas) > 1 and len(parsed_alphas) != len(files):
+        raise typer.BadParameter(
+            f"Number of alphas ({len(parsed_alphas)}) and geo files ({len(files)}) doesn't match."
+        ) from None
+
+    if no_background:
+        basemap_provider = None
+        background_color = background_color or ("black" if is_dark_style else "white")
+
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore")
         plot_geo_data(
             files,
             renderer=renderer,
             bbox=cast(Optional[tuple[float, float, float, float]], bbox),
+            color=parsed_colors,
+            alpha=parsed_alphas,
+            basemap_provider=basemap_provider,
+            background_color=background_color or "black",
             no_border=no_border,
         )
 
