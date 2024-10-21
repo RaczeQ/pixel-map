@@ -2,10 +2,10 @@
 # It is not intended for manual editing.
 
 [metadata]
-groups = ["default", "dev", "lint", "test"]
+groups = ["default", "dev", "license", "lint", "test"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:a22b67b4125e439b7a62dc8ddc307c85715fae7b3f88b0af016f3ef9376b1ee4"
+content_hash = "sha256:8105c234d57ea95ef2e382ccf4d812aa76ae357c34cec716fc4f74628d51b2a9"
 
 [[metadata.targets]]
 requires_python = ">=3.9"
@@ -22,17 +22,27 @@ files = [
 ]
 
 [[package]]
+name = "appdirs"
+version = "1.4.4"
+summary = "A small Python module for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
+groups = ["license"]
+files = [
+    {file = "appdirs-1.4.4-py2.py3-none-any.whl", hash = "sha256:a841dacd6b99318a741b166adb07e19ee71a274450e68237b4650ca1055ab128"},
+    {file = "appdirs-1.4.4.tar.gz", hash = "sha256:7d5d0167b2b1ba821647616af46a749d1c653740dd0d2415100fe26e27afdf41"},
+]
+
+[[package]]
 name = "attrs"
-version = "24.2.0"
+version = "23.2.0"
 requires_python = ">=3.7"
 summary = "Classes Without Boilerplate"
-groups = ["default"]
+groups = ["default", "license"]
 dependencies = [
     "importlib-metadata; python_version < \"3.8\"",
 ]
 files = [
-    {file = "attrs-24.2.0-py3-none-any.whl", hash = "sha256:81921eb96de3191c8258c199618104dd27ac608d9366f5e35d011eae1867ede2"},
-    {file = "attrs-24.2.0.tar.gz", hash = "sha256:5cfb1b9148b5b086569baec03f20d7b6bf3bcacc9a42bebf87ffaaca362f6346"},
+    {file = "attrs-23.2.0-py3-none-any.whl", hash = "sha256:99b87a485a5820b23b879f04c2305b44b951b502fd64be915879d77a7e8fc6f1"},
+    {file = "attrs-23.2.0.tar.gz", hash = "sha256:935dc3b529c262f6cf76e50877d35a4bd3c1de194fd41f47a2b7ae8f19971f30"},
 ]
 
 [[package]]
@@ -70,11 +80,27 @@ files = [
 ]
 
 [[package]]
+name = "cattrs"
+version = "24.1.2"
+requires_python = ">=3.8"
+summary = "Composable complex class support for attrs and dataclasses."
+groups = ["license"]
+dependencies = [
+    "attrs>=23.1.0",
+    "exceptiongroup>=1.1.1; python_version < \"3.11\"",
+    "typing-extensions!=4.6.3,>=4.1.0; python_version < \"3.11\"",
+]
+files = [
+    {file = "cattrs-24.1.2-py3-none-any.whl", hash = "sha256:67c7495b760168d931a10233f979b28dc04daf853b30752246f4f8471c6d68d0"},
+    {file = "cattrs-24.1.2.tar.gz", hash = "sha256:8028cfe1ff5382df59dd36474a86e02d817b06eaf8af84555441bac915d2ef85"},
+]
+
+[[package]]
 name = "certifi"
 version = "2024.8.30"
 requires_python = ">=3.6"
 summary = "Python package for providing Mozilla's CA Bundle."
-groups = ["default", "test"]
+groups = ["default", "license", "test"]
 files = [
     {file = "certifi-2024.8.30-py3-none-any.whl", hash = "sha256:922820b53db7a7257ffbda3f597266d435245903d80737e34f8a45ff3e3230d8"},
     {file = "certifi-2024.8.30.tar.gz", hash = "sha256:bec941d2aa8195e248a60b31ff9f0558284cf01a52591ceda73ea9afffd69fd9"},
@@ -107,7 +133,7 @@ name = "charset-normalizer"
 version = "3.4.0"
 requires_python = ">=3.7.0"
 summary = "The Real First Universal Charset Detector. Open, modern and actively maintained alternative to Chardet."
-groups = ["default", "lint", "test"]
+groups = ["default", "license", "lint", "test"]
 files = [
     {file = "charset_normalizer-3.4.0-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:4f9fc98dad6c2eaa32fc3af1417d95b5e3d08aff968df0cd320066def971f9a6"},
     {file = "charset_normalizer-3.4.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:0de7b687289d3c1b3e8660d0741874abe7888100efe14bd0f9fd7141bcbda92b"},
@@ -235,7 +261,7 @@ name = "colorama"
 version = "0.4.6"
 requires_python = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,>=2.7"
 summary = "Cross-platform colored terminal text."
-groups = ["default", "dev", "test"]
+groups = ["default", "dev", "license", "test"]
 files = [
     {file = "colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"},
     {file = "colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44"},
@@ -448,11 +474,26 @@ name = "exceptiongroup"
 version = "1.2.2"
 requires_python = ">=3.7"
 summary = "Backport of PEP 654 (exception groups)"
-groups = ["test"]
+groups = ["license", "test"]
 marker = "python_version < \"3.11\""
 files = [
     {file = "exceptiongroup-1.2.2-py3-none-any.whl", hash = "sha256:3111b9d131c238bec2f8f516e123e14ba243563fb135d3fe885990585aa7795b"},
     {file = "exceptiongroup-1.2.2.tar.gz", hash = "sha256:47c2edf7c6738fafb49fd34290706d1a1a2f4d1c6df275526b62cbb4aa5393cc"},
+]
+
+[[package]]
+name = "fhconfparser"
+version = "2024.1"
+requires_python = ">=3.8,<4.0"
+summary = "Provides a config language independent way to read a config file."
+groups = ["license"]
+dependencies = [
+    "attrs<24,>=23.2.0",
+    "tomli<3,>=2.0.1",
+]
+files = [
+    {file = "fhconfparser-2024.1-py3-none-any.whl", hash = "sha256:f6048cb646e69a3422a581bc0102150c2b79fe7ff26b82233e5ef52f72820e3e"},
+    {file = "fhconfparser-2024.1.tar.gz", hash = "sha256:de8af019f0071e614d523985e1d93e0fce20a409d1c64dead03b1b665d4b2e4d"},
 ]
 
 [[package]]
@@ -575,7 +616,7 @@ name = "idna"
 version = "3.10"
 requires_python = ">=3.6"
 summary = "Internationalized Domain Names in Applications (IDNA)"
-groups = ["default", "test"]
+groups = ["default", "license", "test"]
 files = [
     {file = "idna-3.10-py3-none-any.whl", hash = "sha256:946d195a0d259cbba61165e88e65941f16e9b36ea6ddb97f00452bae8b1287d3"},
     {file = "idna-3.10.tar.gz", hash = "sha256:12f65c9b470abda6dc35cf8e63cc574b1c52b11df2c86030af0ac09b01b13ea9"},
@@ -638,7 +679,7 @@ name = "importlib-metadata"
 version = "8.5.0"
 requires_python = ">=3.8"
 summary = "Read metadata from Python packages"
-groups = ["default"]
+groups = ["default", "license"]
 marker = "python_version < \"3.10\""
 dependencies = [
     "typing-extensions>=3.6.4; python_version < \"3.8\"",
@@ -818,6 +859,46 @@ files = [
 ]
 
 [[package]]
+name = "licensecheck"
+version = "2024.3"
+requires_python = "<4.0,>=3.8"
+summary = "Output the licenses used by dependencies and check if these are compatible with the project license"
+groups = ["license"]
+dependencies = [
+    "appdirs<2,>=1.4.4",
+    "fhconfparser<2026,>=2024.1",
+    "loguru<2,>=0.7.2",
+    "markdown<4,>=3.6",
+    "packaging<25,>=24.0",
+    "requests-cache<2,>=1.2.0",
+    "requests<3,>=2.31.0",
+    "requirements-parser<2,>=0.11.0",
+    "rich<14,>=13.7.1",
+    "tomli<3,>=2.0.1",
+    "uv<2,>=0.3.3",
+]
+files = [
+    {file = "licensecheck-2024.3-py3-none-any.whl", hash = "sha256:0baef4c1865e0325a35ff25ed12a0c7094035b7dcfbab9a1abfe43d7735adebe"},
+    {file = "licensecheck-2024.3.tar.gz", hash = "sha256:e838e1c87a7ede553df376ad35a69d7c4b02676df0fba9dd1c6a6866eb0e0ee5"},
+]
+
+[[package]]
+name = "loguru"
+version = "0.7.2"
+requires_python = ">=3.5"
+summary = "Python logging made (stupidly) simple"
+groups = ["license"]
+dependencies = [
+    "aiocontextvars>=0.2.0; python_version < \"3.7\"",
+    "colorama>=0.3.4; sys_platform == \"win32\"",
+    "win32-setctime>=1.0.0; sys_platform == \"win32\"",
+]
+files = [
+    {file = "loguru-0.7.2-py3-none-any.whl", hash = "sha256:003d71e3d3ed35f0f8984898359d65b79e5b21943f78af86aa5491210429b8eb"},
+    {file = "loguru-0.7.2.tar.gz", hash = "sha256:e671a53522515f34fd406340ee968cb9ecafbc4b36c679da03c18fd8d0bd51ac"},
+]
+
+[[package]]
 name = "looseversion"
 version = "1.3.0"
 summary = "Version numbering for anarchists and software realists"
@@ -829,11 +910,25 @@ files = [
 ]
 
 [[package]]
+name = "markdown"
+version = "3.7"
+requires_python = ">=3.8"
+summary = "Python implementation of John Gruber's Markdown."
+groups = ["license"]
+dependencies = [
+    "importlib-metadata>=4.4; python_version < \"3.10\"",
+]
+files = [
+    {file = "Markdown-3.7-py3-none-any.whl", hash = "sha256:7eb6df5690b81a1d7942992c97fad2938e956e79df20cbc6186e9c3a77b1c803"},
+    {file = "markdown-3.7.tar.gz", hash = "sha256:2ae2471477cfd02dbbf038d5d9bc226d40def84b4fe2986e49b59b6b472bbed2"},
+]
+
+[[package]]
 name = "markdown-it-py"
 version = "3.0.0"
 requires_python = ">=3.8"
 summary = "Python port of markdown-it. Markdown parsing, done right!"
-groups = ["default"]
+groups = ["default", "license"]
 dependencies = [
     "mdurl~=0.1",
 ]
@@ -908,7 +1003,7 @@ name = "mdurl"
 version = "0.1.2"
 requires_python = ">=3.7"
 summary = "Markdown URL utilities"
-groups = ["default"]
+groups = ["default", "license"]
 files = [
     {file = "mdurl-0.1.2-py3-none-any.whl", hash = "sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8"},
     {file = "mdurl-0.1.2.tar.gz", hash = "sha256:bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba"},
@@ -1064,7 +1159,7 @@ name = "packaging"
 version = "24.1"
 requires_python = ">=3.8"
 summary = "Core utilities for Python packages"
-groups = ["default", "test"]
+groups = ["default", "license", "test"]
 files = [
     {file = "packaging-24.1-py3-none-any.whl", hash = "sha256:5b8f2217dbdbd2f7f384c41c628544e6d52f2d0f53c6d0c3ea61aa5d1d7ff124"},
     {file = "packaging-24.1.tar.gz", hash = "sha256:026ed72c8ed3fcce5bf8950572258698927fd1dbda10a5e981cdf0ac37f4f002"},
@@ -1214,11 +1309,37 @@ files = [
 ]
 
 [[package]]
+name = "pip"
+version = "24.2"
+requires_python = ">=3.8"
+summary = "The PyPA recommended tool for installing Python packages."
+groups = ["license"]
+files = [
+    {file = "pip-24.2-py3-none-any.whl", hash = "sha256:2cd581cf58ab7fcfca4ce8efa6dcacd0de5bf8d0a3eb9ec927e07405f4d9e2a2"},
+    {file = "pip-24.2.tar.gz", hash = "sha256:5b5e490b5e9cb275c879595064adce9ebd31b854e3e803740b72f9ccf34a45b8"},
+]
+
+[[package]]
+name = "pipdeptree"
+version = "2.23.4"
+requires_python = ">=3.8"
+summary = "Command line utility to show dependency tree of packages."
+groups = ["license"]
+dependencies = [
+    "packaging>=24.1",
+    "pip>=24.2",
+]
+files = [
+    {file = "pipdeptree-2.23.4-py3-none-any.whl", hash = "sha256:6a4b4f45bb4a27a440702747636b98e4b88369c00396a840266d536fc6804b6f"},
+    {file = "pipdeptree-2.23.4.tar.gz", hash = "sha256:8a9e7ceee623d1cb2839b6802c26dd40959d31ecaa1468d32616f7082658f135"},
+]
+
+[[package]]
 name = "platformdirs"
 version = "4.3.6"
 requires_python = ">=3.8"
 summary = "A small Python package for determining appropriate platform-specific dirs, e.g. a `user data dir`."
-groups = ["lint", "test"]
+groups = ["license", "lint", "test"]
 files = [
     {file = "platformdirs-4.3.6-py3-none-any.whl", hash = "sha256:73e575e1408ab8103900836b97580d5307456908a03e92031bab39e4554cc3fb"},
     {file = "platformdirs-4.3.6.tar.gz", hash = "sha256:357fb2acbc885b0419afd3ce3ed34564c13c9b95c89360cd9563f73aa5e2b907"},
@@ -1299,7 +1420,7 @@ name = "pygments"
 version = "2.18.0"
 requires_python = ">=3.8"
 summary = "Pygments is a syntax highlighting package written in Python."
-groups = ["default"]
+groups = ["default", "license"]
 files = [
     {file = "pygments-2.18.0-py3-none-any.whl", hash = "sha256:b8e6aca0523f3ab76fee51799c488e38782ac06eafcf95e7ba832985c8e7b13a"},
     {file = "pygments-2.18.0.tar.gz", hash = "sha256:786ff802f32e91311bff3889f6e9a86e81505fe99f2735bb6d60ae0c5004f199"},
@@ -1601,7 +1722,7 @@ name = "requests"
 version = "2.32.3"
 requires_python = ">=3.8"
 summary = "Python HTTP for Humans."
-groups = ["default", "test"]
+groups = ["default", "license", "test"]
 dependencies = [
     "certifi>=2017.4.17",
     "charset-normalizer<4,>=2",
@@ -1611,6 +1732,25 @@ dependencies = [
 files = [
     {file = "requests-2.32.3-py3-none-any.whl", hash = "sha256:70761cfe03c773ceb22aa2f671b4757976145175cdfca038c02654d061d6dcc6"},
     {file = "requests-2.32.3.tar.gz", hash = "sha256:55365417734eb18255590a9ff9eb97e9e1da868d4ccd6402399eaf68af20a760"},
+]
+
+[[package]]
+name = "requests-cache"
+version = "1.2.1"
+requires_python = ">=3.8"
+summary = "A persistent cache for python requests"
+groups = ["license"]
+dependencies = [
+    "attrs>=21.2",
+    "cattrs>=22.2",
+    "platformdirs>=2.5",
+    "requests>=2.22",
+    "url-normalize>=1.4",
+    "urllib3>=1.25.5",
+]
+files = [
+    {file = "requests_cache-1.2.1-py3-none-any.whl", hash = "sha256:1285151cddf5331067baa82598afe2d47c7495a1334bfe7a7d329b43e9fd3603"},
+    {file = "requests_cache-1.2.1.tar.gz", hash = "sha256:68abc986fdc5b8d0911318fbb5f7c80eebcd4d01bfacc6685ecf8876052511d1"},
 ]
 
 [[package]]
@@ -1628,11 +1768,26 @@ files = [
 ]
 
 [[package]]
+name = "requirements-parser"
+version = "0.11.0"
+requires_python = "<4.0,>=3.8"
+summary = "This is a small Python module for parsing Pip requirement files."
+groups = ["license"]
+dependencies = [
+    "packaging>=23.2",
+    "types-setuptools>=69.1.0",
+]
+files = [
+    {file = "requirements_parser-0.11.0-py3-none-any.whl", hash = "sha256:50379eb50311834386c2568263ae5225d7b9d0867fb55cf4ecc93959de2c2684"},
+    {file = "requirements_parser-0.11.0.tar.gz", hash = "sha256:35f36dc969d14830bf459803da84f314dc3d17c802592e9e970f63d0359e5920"},
+]
+
+[[package]]
 name = "rich"
 version = "13.9.2"
 requires_python = ">=3.8.0"
 summary = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
-groups = ["default"]
+groups = ["default", "license"]
 dependencies = [
     "markdown-it-py>=2.2.0",
     "pygments<3.0.0,>=2.13.0",
@@ -1858,7 +2013,7 @@ name = "six"
 version = "1.16.0"
 requires_python = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 summary = "Python 2 and 3 compatibility utilities"
-groups = ["default", "test"]
+groups = ["default", "license", "test"]
 files = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
     {file = "six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
@@ -1905,8 +2060,7 @@ name = "tomli"
 version = "2.0.2"
 requires_python = ">=3.8"
 summary = "A lil' TOML parser"
-groups = ["lint", "test"]
-marker = "python_version < \"3.11\""
+groups = ["license", "lint", "test"]
 files = [
     {file = "tomli-2.0.2-py3-none-any.whl", hash = "sha256:2ebe24485c53d303f690b0ec092806a085f07af5a5aa1464f3931eec36caaa38"},
     {file = "tomli-2.0.2.tar.gz", hash = "sha256:d46d457a85337051c36524bc5349dd91b1877838e2979ac5ced3e710ed8a60ed"},
@@ -1998,11 +2152,22 @@ files = [
 ]
 
 [[package]]
+name = "types-setuptools"
+version = "75.2.0.20241019"
+requires_python = ">=3.8"
+summary = "Typing stubs for setuptools"
+groups = ["license"]
+files = [
+    {file = "types-setuptools-75.2.0.20241019.tar.gz", hash = "sha256:86ea31b5f6df2c6b8f2dc8ae3f72b213607f62549b6fa2ed5866e5299f968694"},
+    {file = "types_setuptools-75.2.0.20241019-py3-none-any.whl", hash = "sha256:2e48ff3acd4919471e80d5e3f049cce5c177e108d5d36d2d4cee3fa4d4104258"},
+]
+
+[[package]]
 name = "typing-extensions"
 version = "4.12.2"
 requires_python = ">=3.8"
 summary = "Backported and Experimental Type Hints for Python 3.8+"
-groups = ["default", "lint", "test"]
+groups = ["default", "license", "lint", "test"]
 files = [
     {file = "typing_extensions-4.12.2-py3-none-any.whl", hash = "sha256:04e5ca0351e0f3f85c6853954072df659d0d13fac324d0072316b67d7794700d"},
     {file = "typing_extensions-4.12.2.tar.gz", hash = "sha256:1a7ead55c7e559dd4dee8856e3a88b41225abfe1ce8df57b7c13915fe121ffb8"},
@@ -2029,14 +2194,55 @@ files = [
 ]
 
 [[package]]
+name = "url-normalize"
+version = "1.4.3"
+requires_python = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
+summary = "URL normalization for Python"
+groups = ["license"]
+dependencies = [
+    "six",
+]
+files = [
+    {file = "url-normalize-1.4.3.tar.gz", hash = "sha256:d23d3a070ac52a67b83a1c59a0e68f8608d1cd538783b401bc9de2c0fac999b2"},
+    {file = "url_normalize-1.4.3-py2.py3-none-any.whl", hash = "sha256:ec3c301f04e5bb676d333a7fa162fa977ad2ca04b7e652bfc9fac4e405728eed"},
+]
+
+[[package]]
 name = "urllib3"
 version = "2.2.3"
 requires_python = ">=3.8"
 summary = "HTTP library with thread-safe connection pooling, file post, and more."
-groups = ["default", "dev", "test"]
+groups = ["default", "dev", "license", "test"]
 files = [
     {file = "urllib3-2.2.3-py3-none-any.whl", hash = "sha256:ca899ca043dcb1bafa3e262d73aa25c465bfb49e0bd9dd5d59f1d0acba2f8fac"},
     {file = "urllib3-2.2.3.tar.gz", hash = "sha256:e7d814a81dad81e6caf2ec9fdedb284ecc9c73076b62654547cc64ccdcae26e9"},
+]
+
+[[package]]
+name = "uv"
+version = "0.4.25"
+requires_python = ">=3.8"
+summary = "An extremely fast Python package and project manager, written in Rust."
+groups = ["license"]
+files = [
+    {file = "uv-0.4.25-py3-none-linux_armv6l.whl", hash = "sha256:94fb2b454afa6bdfeeea4b4581c878944ca9cf3a13712e6762f245f5fbaaf952"},
+    {file = "uv-0.4.25-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:a7c3a18c20ddb527d296d1222bddf42b78031c50b5b4609d426569b5fb61f5b0"},
+    {file = "uv-0.4.25-py3-none-macosx_11_0_arm64.whl", hash = "sha256:18100f0f36419a154306ed6211e3490bf18384cdf3f1a0950848bf64b62fa251"},
+    {file = "uv-0.4.25-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.musllinux_1_1_aarch64.whl", hash = "sha256:6e981b1465e30102e41946adede9cb08051a5d70c6daf09f91a7ea84f0b75c08"},
+    {file = "uv-0.4.25-py3-none-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:578ae385fad6bd6f3868828e33d54994c716b315b1bc49106ec1f54c640837e4"},
+    {file = "uv-0.4.25-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:2d29a78f011ecc2f31c13605acb6574c2894c06d258b0f8d0dbb899986800450"},
+    {file = "uv-0.4.25-py3-none-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:ec181be2bda10651a3558156409ac481549983e0276d0e3645e3b1464e7f8715"},
+    {file = "uv-0.4.25-py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:50c7d0d9e7f392f81b13bf3b7e37768d1486f2fc9d533a54982aa0ed11e4db23"},
+    {file = "uv-0.4.25-py3-none-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:2fc35b5273f1e018aecd66b70e0fd7d2eb6698853dde3e2fc644e7ebf9f825b1"},
+    {file = "uv-0.4.25-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a7022a71ff63a3838796f40e954b76bf7820fc27e96fe002c537e75ff8e34f1d"},
+    {file = "uv-0.4.25-py3-none-manylinux_2_28_aarch64.whl", hash = "sha256:e02afb0f6d4b58718347f7d7cfa5a801e985ce42181ba971ed85ef149f6658ca"},
+    {file = "uv-0.4.25-py3-none-musllinux_1_1_armv7l.whl", hash = "sha256:3d7680795ea78cdbabbcce73d039b2651cf1fa635ddc1aa3082660f6d6255c50"},
+    {file = "uv-0.4.25-py3-none-musllinux_1_1_i686.whl", hash = "sha256:aae9dcafd20d5ba978c8a4939ab942e8e2e155c109e9945207fbbd81d2892c9e"},
+    {file = "uv-0.4.25-py3-none-musllinux_1_1_ppc64le.whl", hash = "sha256:4c55040e67470f2b73e95e432aba06f103a0b348ea0b9c6689b1029c8d9e89fd"},
+    {file = "uv-0.4.25-py3-none-musllinux_1_1_x86_64.whl", hash = "sha256:bdbfd0c476b9e80a3f89af96aed6dd7d2782646311317a9c72614ccce99bb2ad"},
+    {file = "uv-0.4.25-py3-none-win32.whl", hash = "sha256:7d266e02fefef930609328c31c075084295c3cb472bab3f69549fad4fd9d82b3"},
+    {file = "uv-0.4.25-py3-none-win_amd64.whl", hash = "sha256:be2a4fc4fcade9ea5e67e51738c95644360d6e59b6394b74fc579fb617f902f7"},
+    {file = "uv-0.4.25.tar.gz", hash = "sha256:d39077cdfe3246885fcdf32e7066ae731a166101d063629f9cea08738f79e6a3"},
 ]
 
 [[package]]
@@ -2057,6 +2263,18 @@ files = [
 ]
 
 [[package]]
+name = "win32-setctime"
+version = "1.1.0"
+requires_python = ">=3.5"
+summary = "A small Python utility to set file creation time on Windows"
+groups = ["license"]
+marker = "sys_platform == \"win32\""
+files = [
+    {file = "win32_setctime-1.1.0-py3-none-any.whl", hash = "sha256:231db239e959c2fe7eb1d7dc129f11172354f98361c4fa2d6d2d7e278baa8aad"},
+    {file = "win32_setctime-1.1.0.tar.gz", hash = "sha256:15cf5750465118d6929ae4de4eb46e8edae9a5634350c01ba582df868e932cb2"},
+]
+
+[[package]]
 name = "xyzservices"
 version = "2024.9.0"
 requires_python = ">=3.8"
@@ -2072,7 +2290,7 @@ name = "zipp"
 version = "3.20.2"
 requires_python = ">=3.8"
 summary = "Backport of pathlib-compatible object wrapper for zip files"
-groups = ["default"]
+groups = ["default", "license"]
 marker = "python_version < \"3.10\""
 files = [
     {file = "zipp-3.20.2-py3-none-any.whl", hash = "sha256:a817ac80d6cf4b23bf7f2828b7cabf326f15a001bea8b1f9b49631780ba28350"},
