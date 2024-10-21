@@ -1,5 +1,6 @@
 """Main CLI module."""
 
+from contextlib import suppress
 from typing import Annotated, Optional, cast
 
 import click
@@ -45,12 +46,10 @@ class BboxGeometryParser(click.ParamType):  # type: ignore
 
     def convert(self, value, param=None, ctx=None):  # type: ignore
         """Convert parameter value."""
-        try:
+        with suppress(ValueError): # ValueError raised when passing non-numbers to float()
             bbox_values = tuple(float(x.strip()) for x in value.split(","))
             if len(bbox_values) == 4:
                 return bbox_values
-        except ValueError:  # ValueError raised when passing non-numbers to float()
-            pass
 
         raise typer.BadParameter(
             "Cannot parse provided bounding box."
