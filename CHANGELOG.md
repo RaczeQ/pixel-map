@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Title scaling based on terminal width
 - Example geo files
 
+### Changed
+
+- Cleaned dependencies list
+
 ## [0.1.1] - 2024-10-18
 
 ### Added
