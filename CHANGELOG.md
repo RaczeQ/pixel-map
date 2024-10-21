@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2024-10-21
+
 ### Added
 
 - Option to change colors
@@ -42,7 +44,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Plotting basic functionality with CLI
 
-[Unreleased]: https://github.com/RaczeQ/pixel-map/compare/0.1.2...HEAD
+[Unreleased]: https://github.com/RaczeQ/pixel-map/compare/0.2.0...HEAD
+
+[0.2.0]: https://github.com/RaczeQ/pixel-map/compare/0.1.2...0.2.0
 
 [0.1.2]: https://github.com/RaczeQ/pixel-map/compare/0.1.1...0.1.2
 
