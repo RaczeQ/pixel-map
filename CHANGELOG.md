@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Multiple renderers
+- Option to disable border around the map
+- Title scaling based on terminal width
+- Example geo files
+
 ## [0.1.1] - 2024-10-18
 
 ### Added

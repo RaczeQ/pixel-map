@@ -6,10 +6,15 @@ import click
 import typer
 
 from pixel_map import __app_name__, __version__
+from pixel_map.renderers import AVAILABLE_RENDERERS
 
+renderer_help_string = ", ".join(
+    f"[bold dark_orange]{renderer}[/bold dark_orange]"
+    for renderer in sorted(AVAILABLE_RENDERERS.keys())
+)
 VALID_EXAMPLE_FILES = ["london_buildings", "london_park", "london_water", "monaco_buildings"]
 example_files_help_string = ", ".join(
-    f"[bold dark_orange]{example}[/bold dark_orange]" for example in VALID_EXAMPLE_FILES
+    f"[bold dark_orange]{example}[/bold dark_orange]" for example in sorted(VALID_EXAMPLE_FILES)
 )
 
 app = typer.Typer(context_settings={"help_option_names": ["-h", "--help"]}, rich_markup_mode="rich")
@@ -74,6 +79,20 @@ def plot(
             show_default=False,
         ),
     ] = None,
+    renderer: Annotated[
+        str,
+        typer.Option(
+            "--renderer",
+            "-r",
+            help=(
+                "Renderer used for generating terminal output."
+                f" Possible values: {renderer_help_string}."
+            ),
+            case_sensitive=False,
+            show_default="block",
+            is_eager=True,
+        ),
+    ] = "block",
     no_border: Annotated[
         bool,
         typer.Option(
@@ -116,6 +135,9 @@ def plot(
 
     from pixel_map.plotter import plot_geo_data
 
+    if renderer not in AVAILABLE_RENDERERS:
+        raise typer.BadParameter(f"Provided renderer {renderer} doesn't exist.") from None
+
     if example_files:
         from pathlib import Path
 
@@ -133,7 +155,10 @@ def plot(
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore")
         plot_geo_data(
-            files, bbox=cast(Optional[tuple[float, float, float, float]], bbox), no_border=no_border
+            files,
+            renderer=renderer,
+            bbox=cast(Optional[tuple[float, float, float, float]], bbox),
+            no_border=no_border,
         )
 
 

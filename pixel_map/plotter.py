@@ -10,7 +10,6 @@ from typing import Any, Optional
 
 import contextily as cx
 import geopandas as gpd
-import img2unicode
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
@@ -18,14 +17,20 @@ from pyproj import Transformer
 from pyproj.enums import TransformDirection
 from rich import get_console
 from rich.box import HEAVY
+from rich.color import Color
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.style import Style
+from rich.text import Text
+
+from pixel_map.renderers import AVAILABLE_RENDERERS
 
 TRANSFORMER = Transformer.from_crs("EPSG:4326", "EPSG:3857", always_xy=True)
 
 
 def plot_geo_data(
     files: list[str],
+    renderer: str,
     bbox: Optional[tuple[float, float, float, float]] = None,
     no_border: bool = False,
 ) -> None:
@@ -37,6 +42,8 @@ def plot_geo_data(
 
     Args:
         files (list[str]): List of files to plot.
+        renderer (str): A name for the renderer used to generate terminal output.
+            Defaults to "block".
         bbox (Optional[tuple[float, float, float, float]], optional): Bounding box used to clip the
             geo data. Defaults to None.
         no_border (Optional[bool], optional): Removes the border around the map. Defaults to False.
@@ -128,24 +135,10 @@ def plot_geo_data(
         console=console,
     ) as progress:
         progress.add_task("Rendering geo data", total=None)
-        fast_renderer = img2unicode.Renderer(
-            # img2unicode.FastGenericDualOptimizer(),
-            # img2unicode.ExactGenericDualOptimizer("block"),
-            # img2unicode.FastQuadDualOptimizer(),
-            img2unicode.FastGenericDualOptimizer("block"),
-            # img2unicode.ExactGammaOptimizer("no_block"),
-            max_h=terminal_height,
-            max_w=terminal_width,
-            allow_upscale=True,
+        renderer_object = AVAILABLE_RENDERERS[renderer](
+            terminal_width=terminal_width, terminal_height=terminal_height
         )
-        characters, foreground_colors, background_colors = fast_renderer.render_numpy(image)
-        # braille_renderer = img2unicode.GammaRenderer(
-        #     img2unicode.BestGammaOptimizer(True, "braille"),
-        #     max_h=terminal_height,
-        #     max_w=terminal_width,
-        #     allow_upscale=True,
-        # )
-        # characters, foreground_colors, background_colors  = braille_renderer.render_numpy(image)
+        characters, foreground_colors, background_colors = renderer_object.render_numpy(image)
         full_rich_string = _construct_full_rich_string(
             characters, foreground_colors, background_colors
         )
@@ -246,19 +239,22 @@ def _expand_axes_limit_to_match_ratio(ax: Axes, ratio: float) -> tuple[float, fl
 
 def _construct_full_rich_string(
     characters: Any, foreground_colors: Any, background_colors: Any
-) -> str:
-    result = ""
+) -> Text:
+    has_fg_color = foreground_colors is not None
+    has_bg_color = background_colors is not None
+    result = Text()
     for y in range(characters.shape[0]):
         for x in range(characters.shape[1]):
             idx = y, x
             res = characters[idx]
-            char = chr(res)
-            fg_color = ",".join(map(str, foreground_colors[idx]))
-            bg_color = ",".join(map(str, background_colors[idx]))
-            result += (
-                f"[rgb({fg_color}) ON rgb({bg_color})]{char}[/rgb({fg_color}) ON rgb({bg_color})]"
+            result.append(
+                chr(res),
+                style=Style(
+                    color=(Color.from_rgb(*foreground_colors[idx]) if has_fg_color else None),
+                    bgcolor=(Color.from_rgb(*background_colors[idx]) if has_bg_color else None),
+                ),
             )
-        result += "\n"
+        result.append("\n")
     return result[:-1]
 
 
