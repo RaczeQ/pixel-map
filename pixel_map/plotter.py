@@ -27,6 +27,9 @@ from pixel_map.renderers import AVAILABLE_RENDERERS
 
 TRANSFORMER = Transformer.from_crs("EPSG:4326", "EPSG:3857", always_xy=True)
 
+# TODO:
+# - change geopandas loading to get multiple dfs instead of one
+# - add option to load contextily from string or name
 
 def plot_geo_data(
     files: list[str],
