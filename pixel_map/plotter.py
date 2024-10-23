@@ -340,8 +340,8 @@ def _generate_panel_subtitle(
         return subtitle
     elif len(bbox_str) <= (terminal_width - 4):
         return bbox_str
-    else:
-        return ""
+
+    return ""
 
 
 def _get_progress_object(console: Console) -> Progress:
