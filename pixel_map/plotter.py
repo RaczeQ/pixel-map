@@ -27,6 +27,8 @@ from pixel_map.renderers import AVAILABLE_RENDERERS
 
 TRANSFORMER = Transformer.from_crs("EPSG:4326", "EPSG:3857", always_xy=True)
 
+EPSG_3857_BOUNDS = (-20037508.34, -20048966.1, 20037508.34, 20048966.1)
+
 
 def plot_geo_data(
     files: list[str],
@@ -37,6 +39,8 @@ def plot_geo_data(
     basemap_provider: Optional[str] = None,
     background_color: Optional[str] = None,
     no_border: bool = False,
+    console_width: Optional[int] = None,
+    console_height: Optional[int] = None,
 ) -> None:
     """
     Plot the geo data into a terminal.
@@ -59,8 +63,18 @@ def plot_geo_data(
         background_color (str, optional): Background color. Used then basemap_provider is None.
             Defaults to None.
         no_border (bool, optional): Removes the border around the map. Defaults to False.
+        console_width (int, optional): Console width. Can be used to set arbitrary value.
+            Defaults to None.
+        console_height (int, optional): Console height. Can be used to set arbitrary value.
+            Defaults to None.
     """
     console = get_console()
+
+    if console_width:
+        console.width = console_width
+
+    if console_height:
+        console.height = console_height
 
     if no_border:
         terminal_width = console.width
@@ -125,15 +139,25 @@ def plot_geo_data(
         left, bottom, right, top = _expand_axes_limit_to_match_ratio(ax, ratio=map_ratio)
 
         if basemap_provider:
-            cx.add_basemap(
-                ax,
-                source=basemap_provider,
-                crs=3857,
-                attribution=False,
-            )
+            try:
+                cx.add_basemap(
+                    ax,
+                    source=basemap_provider,
+                    crs=3857,
+                    attribution=False,
+                )
+            except ValueError:
+                cx.add_basemap(
+                    ax,
+                    source=basemap_provider,
+                    crs=3857,
+                    attribution=False,
+                    zoom=0,
+                )
 
         ax.set_position((0, 0, 1, 1))
         canvas.draw()
+
         image_flat = np.frombuffer(canvas.tostring_rgb(), dtype="uint8")  # (H * W * 3,)
         image = image_flat.reshape(*reversed(canvas.get_width_height()), 3)
 
@@ -248,13 +272,19 @@ def _expand_axes_limit_to_match_ratio(ax: Axes, ratio: float) -> tuple[float, fl
         width_padding = (new_width - width) / 2
         left = left - width_padding
         right = right + width_padding
-        ax.set_xlim([left, right])
     else:
         new_height = (current_ratio / ratio) * height
         height_padding = (new_height - height) / 2
         bottom = bottom - height_padding
         top = top + height_padding
-        ax.set_ylim([bottom, top])
+
+    left = max(left, EPSG_3857_BOUNDS[0])
+    bottom = max(bottom, EPSG_3857_BOUNDS[1])
+    right = min(right, EPSG_3857_BOUNDS[2])
+    top = min(top, EPSG_3857_BOUNDS[3])
+
+    ax.set_xlim([left, right])
+    ax.set_ylim([bottom, top])
 
     return left, bottom, right, top
 

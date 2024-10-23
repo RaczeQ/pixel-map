@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Option to pass console width and height
+
+### Fixed
+
+- Automatic bounds clipping to the EPSG:3857 limits
+- Capped minimal contextily zoom at 0
+
 ## [0.2.0] - 2024-10-21
 
 ### Added

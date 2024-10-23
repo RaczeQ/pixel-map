@@ -200,6 +200,24 @@ def plot(
             show_default=False,
         ),
     ] = None,
+    console_width: Annotated[
+        Optional[int],
+        typer.Option(
+            "--width",
+            metavar="INT",
+            help=("Override the current console width."),
+            show_default=False,
+        ),
+    ] = None,
+    console_height: Annotated[
+        Optional[int],
+        typer.Option(
+            "--height",
+            metavar="INT",
+            help=("Override the current console height."),
+            show_default=False,
+        ),
+    ] = None,
     example_files: Annotated[
         bool,
         typer.Option(
@@ -262,11 +280,16 @@ def plot(
     if not basemap_provider:
         basemap_provider = provider
 
-    parsed_colors: Optional[list[str]] = colors # type: ignore[assignment]
+    background_color = background_color or ("black" if is_dark_style else "white")
+
+    if no_background:
+        basemap_provider = None
+
+    parsed_colors: Optional[list[str]] = colors  # type: ignore[assignment]
     if not parsed_colors:
         parsed_colors = [color]
 
-    parsed_alphas: Optional[list[float]] = alphas # type: ignore[assignment]
+    parsed_alphas: Optional[list[float]] = alphas  # type: ignore[assignment]
     if not parsed_alphas:
         parsed_alphas = [1]
 
@@ -280,10 +303,6 @@ def plot(
             f"Number of alphas ({len(parsed_alphas)}) and geo files ({len(files)}) doesn't match."
         ) from None
 
-    if no_background:
-        basemap_provider = None
-        background_color = background_color or ("black" if is_dark_style else "white")
-
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore")
         plot_geo_data(
@@ -295,6 +314,8 @@ def plot(
             basemap_provider=basemap_provider,
             background_color=background_color or "black",
             no_border=no_border,
+            console_width=console_width,
+            console_height=console_height,
         )
 
 
