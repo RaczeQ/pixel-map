@@ -17,6 +17,27 @@ dependencies = [
 requires-python = ">=3.9"
 readme = "README.md"
 license = { text = "MIT" }
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Scientific/Engineering :: GIS",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Operating System :: Unix",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+]
+
+[project.urls]
+Homepage = "https://github.com/RaczeQ/pixel-map"
+Repository = "https://github.com/RaczeQ/pixel-map"
+Changelog = "https://github.com/RaczeQ/pixel-map/blob/main/CHANGELOG.md"
 
 [project.scripts]
 pixel-map = "pixel_map.__main__:main"
