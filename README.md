@@ -184,8 +184,9 @@ $ pixel-map --example london_buildings --no-bg -r ascii-bw
 
   For example in VS Code there is an option `terminal.integrated.minimumContrastRatio` that is set to `4.5` by default.
 
-  | Contrast: 4.5 |  Contrast: 1 |
-  | <img src="https://raw.githubusercontent.com/RaczeQ/pixel-map/main/images/monaco_contrast.jpg"> | <img src="https://raw.githubusercontent.com/RaczeQ/pixel-map/main/images/monaco_contrast_low.jpg"> |
+  | Contrast: 4.5 | Contrast: 1 |
+  | --- | --- |
+  | ![](https://raw.githubusercontent.com/RaczeQ/pixel-map/main/images/monaco_contrast.jpg) | ![](https://raw.githubusercontent.com/RaczeQ/pixel-map/main/images/monaco_contrast_low.jpg) |
 
 - **Why are there black bars on the left/right, top/bottom of the output?**
 
