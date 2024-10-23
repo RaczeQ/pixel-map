@@ -39,6 +39,7 @@ def test_pbf_file_or_geometry_filter_is_required() -> None:
 def test_basic_run() -> None:
     """Test if runs properly without options."""
     result = runner.invoke(app, ["--example", "monaco_buildings"])
+    print(result.stdout)
 
     assert result.exit_code == 0
     assert "monaco_buildings.parquet" in result.stdout
@@ -78,6 +79,7 @@ def test_basic_run() -> None:
 def test_proper_args(args: list[str]) -> None:
     """Test if runs properly with options."""
     result = runner.invoke(app, ["--example", "monaco_buildings", *args])
+    print(result.stdout)
 
     assert result.exit_code == 0
 
@@ -89,6 +91,7 @@ def test_proper_args(args: list[str]) -> None:
 def test_renderers(renderer: str) -> None:
     """Test if all renderers are working."""
     result = runner.invoke(app, ["--example", "monaco_buildings", "-r", renderer])
+    print(result.stdout)
 
     assert result.exit_code == 0
 
