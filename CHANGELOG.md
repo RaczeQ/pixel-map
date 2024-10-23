@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Option to pass console width and height
+- Option to pass plotting DPI
 
 ### Fixed
 
