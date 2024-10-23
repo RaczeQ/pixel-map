@@ -18,6 +18,7 @@ from pyproj.enums import TransformDirection
 from rich import get_console
 from rich.box import HEAVY
 from rich.color import Color
+from rich.console import Console
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.style import Style
@@ -41,6 +42,7 @@ def plot_geo_data(
     no_border: bool = False,
     console_width: Optional[int] = None,
     console_height: Optional[int] = None,
+    plotting_dpi: int = 10,
 ) -> None:
     """
     Plot the geo data into a terminal.
@@ -67,6 +69,8 @@ def plot_geo_data(
             Defaults to None.
         console_height (int, optional): Console height. Can be used to set arbitrary value.
             Defaults to None.
+        plotting_dpi (int, optional): Quality of matplotlib figure. It's used to multiply terminal
+            size by some value to get better quality plot. Defaults to 10.
     """
     console = get_console()
 
@@ -88,36 +92,26 @@ def plot_geo_data(
 
     map_ratio = map_width / map_height
 
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        transient=True,
-        console=console,
-    ) as progress:
+    with _get_progress_object(console) as progress:
         progress.add_task("Calculating bounding box", total=None)
         bbox_axes_bounds = None
         if bbox:
             bbox, bbox_axes_bounds = _expand_bbox_to_match_ratio(bbox, ratio=map_ratio)
 
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        transient=True,
-        console=console,
-    ) as progress:
+    with _get_progress_object(console) as progress:
         progress.add_task("Loading Geo data", total=None)
         gdfs = _load_geo_data(files, bbox=bbox)
         if bbox:
             gdfs = [gdf.clip_by_rect(*bbox) for gdf in gdfs]
 
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        transient=True,
-        console=console,
-    ) as progress:
+    with _get_progress_object(console) as progress:
         progress.add_task("Plotting geo data", total=None)
-        f, ax = plt.subplots(figsize=(map_width, map_height), dpi=10)
+        f, ax = plt.subplots(figsize=(map_width, map_height), dpi=plotting_dpi)
+
+        ax.set_axis_off()
+        ax.set_xticks([])
+        ax.set_yticks([])
+
         f.patch.set_facecolor(background_color)
         canvas = f.canvas
         # gdf.to_crs(3857).plot(ax=ax, alpha=0.4)
@@ -129,7 +123,6 @@ def plot_geo_data(
             plot_color = color[idx % len(color)]
             plot_alpha = alpha[idx % len(alpha)]
             gdf.to_crs(3857).plot(ax=ax, color=plot_color, alpha=plot_alpha)
-        ax.axis("off")
 
         if bbox_axes_bounds:
             left, bottom, right, top = bbox_axes_bounds
@@ -161,12 +154,7 @@ def plot_geo_data(
         image_flat = np.frombuffer(canvas.tostring_rgb(), dtype="uint8")  # (H * W * 3,)
         image = image_flat.reshape(*reversed(canvas.get_width_height()), 3)
 
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        transient=True,
-        console=console,
-    ) as progress:
+    with _get_progress_object(console) as progress:
         progress.add_task("Rendering geo data", total=None)
         renderer_object = AVAILABLE_RENDERERS[renderer](
             terminal_width=terminal_width, terminal_height=terminal_height
@@ -354,3 +342,12 @@ def _generate_panel_subtitle(
         return bbox_str
     else:
         return ""
+
+
+def _get_progress_object(console: Console) -> Progress:
+    return Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        transient=True,
+        console=console,
+    )

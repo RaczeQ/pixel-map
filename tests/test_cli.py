@@ -73,6 +73,8 @@ def test_basic_run() -> None:
 @P.case("Console width", ["--width", "10"])  # type: ignore
 @P.case("Console height", ["--height", "10"])  # type: ignore
 @P.case("Console width and height", ["--width", "10", "--height", "10"])  # type: ignore
+@P.case("Plotting dpi small", ["--dpi", "1"])  # type: ignore
+@P.case("Plotting dpi big", ["--dpi", "100"])  # type: ignore
 def test_proper_args(args: list[str]) -> None:
     """Test if runs properly with options."""
     result = runner.invoke(app, ["--example", "monaco_buildings", *args])
@@ -104,6 +106,7 @@ def test_renderers(renderer: str) -> None:
 @P.case("Wrong opacity", ["-a", random_str()])  # type: ignore
 @P.case("Wrong background color", ["--bg-color", random_str()])  # type: ignore
 @P.case("Wrong number of colors", ["london_buildings", "-c", "C0,C1,C2"])  # type: ignore
+@P.case("Wrong plotting dpi", ["--dpi", random_str()])  # type: ignore
 def test_wrong_args(args: list[str], capsys: pytest.CaptureFixture) -> None:
     """Test if doesn't run properly with options."""
     # Fix for the I/O error from the Click repository

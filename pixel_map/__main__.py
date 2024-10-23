@@ -21,16 +21,7 @@ example_files_help_string = ", ".join(
 app = typer.Typer(context_settings={"help_option_names": ["-h", "--help"]}, rich_markup_mode="rich")
 
 # TODO:
-# - add option to select colours (pass list - must match number of files)
 # - add option to select colours per type (polygon, linestring, point)
-#   (pass list(s) - must match number of files)
-# - define default colour schemes with option to select
-#       --light (positron + blue)
-#       or --dark (darkmatter + orange?) [default]
-#       or --street (voyager + ???)
-# - add option to select tileset (or no tileset) by name
-# - add option to pass map height and width
-# - add option to remove the panel (border)
 
 
 def _version_callback(value: bool) -> None:
@@ -218,6 +209,15 @@ def plot(
             show_default=False,
         ),
     ] = None,
+    plotting_dpi: Annotated[
+        int,
+        typer.Option(
+            "--dpi",
+            metavar="INT",
+            help=("DPI used to get better quality matplotlib plot before rendering to terminal."),
+            show_default=True,
+        ),
+    ] = 10,
     example_files: Annotated[
         bool,
         typer.Option(
@@ -316,6 +316,7 @@ def plot(
             no_border=no_border,
             console_width=console_width,
             console_height=console_height,
+            plotting_dpi=plotting_dpi,
         )
 
 
