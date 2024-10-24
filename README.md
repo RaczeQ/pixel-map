@@ -33,13 +33,13 @@ Python CLI tool for plotting geo data in the terminal
 PyPI:
 
 ```sh
-$ pip install img2unicode
+$ pip install pixel-map
 ```
 
 uv:
 
 ```sh
-$ uv pip install img2unicode
+$ uv pip install pixel-map
 ```
 
 ## Usage
