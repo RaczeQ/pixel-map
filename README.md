@@ -152,7 +152,7 @@ $ pixel-map --example london_buildings --no-bg -r ascii-bw
 
 - `rich (>=12.0.0)`: For showing progress and generating terminal output
 
-- `geopandas (>=0.6)`: For reading Geo files and plotting
+- `geopandas (>=0.8)`: For reading Geo files and plotting
 
 - `pyarrow (>=16.0.0)`: For geoparquet files support
 

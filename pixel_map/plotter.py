@@ -5,6 +5,7 @@ Generates a Matplotlib canvas that is rendered to an image and later transformed
 unicode characters.
 """
 
+import os
 from pathlib import Path
 from typing import Any, Optional, Union
 
@@ -72,7 +73,11 @@ def plot_geo_data(
         plotting_dpi (int, optional): Quality of matplotlib figure. It's used to multiply terminal
             size by some value to get better quality plot. Defaults to 10.
     """
-    console = get_console()
+    force_terminal = os.getenv("FORCE_TERMINAL_MODE", "false").lower() == "true"
+    if force_terminal:
+        console = Console(force_interactive=False, force_jupyter=False, force_terminal=True)
+    else:
+        console = get_console()
 
     if console_width:
         console.width = console_width
