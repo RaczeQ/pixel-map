@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.3] - 2024-11-01
+
 ### Changed
 
 - Bumped minimal geopandas version
@@ -62,7 +64,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Plotting basic functionality with CLI
 
-[Unreleased]: https://github.com/RaczeQ/pixel-map/compare/0.2.2...HEAD
+[Unreleased]: https://github.com/RaczeQ/pixel-map/compare/0.2.3...HEAD
+
+[0.2.3]: https://github.com/RaczeQ/pixel-map/compare/0.2.2...0.2.3
 
 [0.2.2]: https://github.com/RaczeQ/pixel-map/compare/0.2.1...0.2.2
 
