@@ -248,6 +248,11 @@ def _expand_bbox_to_match_ratio(
         bottom = bottom - height_padding
         top = top + height_padding
 
+    left = max(left, EPSG_3857_BOUNDS[0])
+    bottom = max(bottom, EPSG_3857_BOUNDS[1])
+    right = min(right, EPSG_3857_BOUNDS[2])
+    top = min(top, EPSG_3857_BOUNDS[3])
+
     new_minx, new_miny = TRANSFORMER.transform(left, bottom, direction=TransformDirection.INVERSE)
     new_maxx, new_maxy = TRANSFORMER.transform(right, top, direction=TransformDirection.INVERSE)
 
