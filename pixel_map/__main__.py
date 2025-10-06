@@ -308,7 +308,7 @@ def plot(
         plot_geo_data(
             files,
             renderer=renderer,
-            bbox=cast(Optional[tuple[float, float, float, float]], bbox),
+            bbox=cast("Optional[tuple[float, float, float, float]]", bbox),
             color=parsed_colors,
             alpha=parsed_alphas,
             basemap_provider=basemap_provider,
