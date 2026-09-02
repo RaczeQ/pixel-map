@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Replaced the `img2unicode` dependency with a native dual-colour terminal
+  renderer (`pixel_map/terminal_renderers.py`).  The new engine rasterises
+  glyph templates (geometric for half/quad/braille/block, Pillow for ASCII) and
+  selects the best character per cell via a fully vectorised Lab-distance
+  optimisation, yielding a 4x-60x speed-up over `img2unicode` while keeping the
+  exact `render_numpy(image) -> (characters, fg_colors, bg_colors)` contract.
+  All nine renderer names are preserved: `block`, `all`, `ascii`, `space`,
+  `half`, `quad`, `braille`, `braille-bw`, `ascii-bw`.
+
+### Removed
+
+- `img2unicode` (and its transitive heavy dependencies `scikit-image`,
+  `scikit-learn` and the Linux-only `n2` ANN library) are no longer required.
+  `pillow` is now a direct dependency.
+
 ## [0.2.4] - 2024-11-14
 
 ### Fixed
