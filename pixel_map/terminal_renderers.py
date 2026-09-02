@@ -29,7 +29,7 @@ at once via one matrix multiply per colour channel, making the whole pass
 dominated by BLAS and far cheaper than img2unicode's Python-level loops.
 """
 
-from typing import Callable, Optional
+from collections.abc import Callable
 
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
@@ -370,7 +370,7 @@ def _select_monochrome(
     density_diff = np.abs(charset.densities[:, None] - cell_mean[None, :])  # (C, cells)
     density_diff = np.where(near_best, density_diff, np.inf)
     best = np.argmin(density_diff, axis=0)  # (cells,)
-    return charset.codes[best].reshape(H, W).astype(np.int32)
+    return np.asarray(charset.codes[best].reshape(H, W).astype(np.int32))
 
 
 def _colors_for_best(
@@ -407,7 +407,7 @@ def _render_dual(
     sub_h: int = SUB_H,
     sub_w: int = SUB_W,
     monochrome: bool = False,
-) -> tuple[np.ndarray, Optional[np.ndarray], Optional[np.ndarray]]:
+) -> tuple[np.ndarray, np.ndarray | None, np.ndarray | None]:
     """
     Render ``image`` into terminal cells using ``charset``.
 
@@ -432,7 +432,7 @@ def _render_dual(
     # exactly ``sub_h x sub_w`` subpixels after resize.
     target_w = W * sub_w
     target_h = H * sub_h
-    pil_img = Image.fromarray(image, "RGB")
+    pil_img = Image.fromarray(image)
     small = np.asarray(pil_img.resize((target_w, target_h), Image.Resampling.BILINEAR))
     small = np.ascontiguousarray(small)
     S = sub_h * sub_w
@@ -478,7 +478,7 @@ class TerminalRenderer:
 
     def render_numpy(
         self, image: np.ndarray
-    ) -> tuple[np.ndarray, Optional[np.ndarray], Optional[np.ndarray]]:
+    ) -> tuple[np.ndarray, np.ndarray | None, np.ndarray | None]:
         """Render ``image`` into terminal cells."""
         raise NotImplementedError
 
@@ -498,7 +498,7 @@ class _DualRenderer(TerminalRenderer):
 
     def render_numpy(
         self, image: np.ndarray
-    ) -> tuple[np.ndarray, Optional[np.ndarray], Optional[np.ndarray]]:
+    ) -> tuple[np.ndarray, np.ndarray | None, np.ndarray | None]:
         return _render_dual(
             image,
             _get_charset(self._charset_name),

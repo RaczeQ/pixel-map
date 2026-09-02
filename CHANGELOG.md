@@ -18,6 +18,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   All nine renderer names are preserved: `block`, `all`, `ascii`, `space`,
   `half`, `quad`, `braille`, `braille-bw`, `ascii-bw`.
 
+### Fixed
+
+- Fixed a `ValueError: cannot reshape array` on high-DPI (Retina) displays
+  where `canvas.tostring_rgb()` returns a physically larger pixel buffer than
+  `canvas.get_width_height()` reports.  The reshape now detects the scale
+  factor and adjusts accordingly (`pixel_map/plotter.py`).
+
 ### Removed
 
 - `img2unicode` (and its transitive heavy dependencies `scikit-image`,

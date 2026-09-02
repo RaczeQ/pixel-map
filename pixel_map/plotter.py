@@ -7,7 +7,7 @@ unicode characters.
 
 import os
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any
 
 import contextily as cx
 import geopandas as gpd
@@ -35,14 +35,14 @@ EPSG_3857_BOUNDS = (-20037508.34, -20048966.1, 20037508.34, 20048966.1)
 def plot_geo_data(
     files: list[str],
     renderer: str,
-    bbox: Optional[tuple[float, float, float, float]] = None,
-    color: Union[str, list[str]] = "C0",
-    alpha: Union[float, list[float]] = 1.0,
-    basemap_provider: Optional[str] = None,
-    background_color: Optional[str] = None,
+    bbox: tuple[float, float, float, float] | None = None,
+    color: str | list[str] = "C0",
+    alpha: float | list[float] = 1.0,
+    basemap_provider: str | None = None,
+    background_color: str | None = None,
     no_border: bool = False,
-    console_width: Optional[int] = None,
-    console_height: Optional[int] = None,
+    console_width: int | None = None,
+    console_height: int | None = None,
     plotting_dpi: int = 10,
 ) -> None:
     """
@@ -156,8 +156,19 @@ def plot_geo_data(
         ax.set_position((0, 0, 1, 1))
         canvas.draw()
 
-        image_flat = np.frombuffer(canvas.tostring_rgb(), dtype="uint8")  # (H * W * 3,)
-        image = image_flat.reshape(*reversed(canvas.get_width_height()), 3)
+        # buffer_rgba() replaces the deprecated (and removed in matplotlib 3.10)
+        # tostring_rgb() method.  It returns RGBA data; we keep only RGB.
+        # On high-DPI displays (e.g. macOS Retina), get_width_height() reports
+        # logical pixels while the buffer holds the physical pixel count, which
+        # can be a scale factor larger in each dimension.
+        image_flat = np.frombuffer(canvas.buffer_rgba(), dtype="uint8")  # (H * W * 4,)
+        canvas_w, canvas_h = canvas.get_width_height()
+        total_pixels = len(image_flat) // 4
+        if canvas_w * canvas_h != total_pixels:
+            scale = round((total_pixels / (canvas_w * canvas_h)) ** 0.5)
+            canvas_w *= scale
+            canvas_h *= scale
+        image = image_flat.reshape(canvas_h, canvas_w, 4)[:, :, :3]
 
     with _get_progress_object(console) as progress:
         progress.add_task("Rendering geo data", total=None)
@@ -204,7 +215,7 @@ def get_predefined_light_style() -> tuple[str, str]:
 
 
 def _load_geo_data(
-    files: list[str], bbox: Optional[tuple[float, float, float, float]] = None
+    files: list[str], bbox: tuple[float, float, float, float] | None = None
 ) -> list[gpd.GeoSeries]:
     paths = [Path(file_path) for file_path in files]
     return [
@@ -218,7 +229,7 @@ def _load_geo_data(
 
 
 def _read_geoparquet_file(
-    path: Path, bbox: Optional[tuple[float, float, float, float]] = None
+    path: Path, bbox: tuple[float, float, float, float] | None = None
 ) -> gpd.GeoDataFrame:
     try:
         return gpd.read_parquet(path, bbox=bbox)
