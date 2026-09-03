@@ -205,14 +205,19 @@ def plot_geo_data(
         )
 
 
+ESRI_URL = "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/{variant}/MapServer/tile/"
+
+
 def get_predefined_dark_style() -> tuple[str, str]:
     """Get default background and color for dark style."""
-    return "CartoDB.DarkMatterNoLabels", "C1"
+    url = ESRI_URL.format(variant="World_Dark_Gray_Base") + "{z}/{y}/{x}"
+    return url, "C1"
 
 
 def get_predefined_light_style() -> tuple[str, str]:
     """Get default background and color for light style."""
-    return "CartoDB.PositronNoLabels", "C0"
+    url = ESRI_URL.format(variant="World_Light_Gray_Base") + "{z}/{y}/{x}"
+    return url, "C0"
 
 
 def _load_geo_data(

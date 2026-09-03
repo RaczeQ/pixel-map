@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The native renderer now has a fast path that skips the Pillow resize when the
   matplotlib canvas dimensions already match the subpixel grid (achievable with
   `--dpi 8`), and a row-averaged binreduce for the common 2:1 cell-aspect case.
+- Replaced CARTO DarkMatter and Positron backgrounds with ESRI Light and Dark Canvas
 
 ### Fixed
 
