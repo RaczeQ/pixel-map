@@ -162,7 +162,7 @@ $ pixel-map --example london_buildings --no-bg -r ascii-bw
 
 - `numpy (>=1.26.0)`: For transforming matplotlib array into an image
 
-- `pillow (>=10.0.0)`: For rasterising ASCII glyph templates and downscaling the canvas
+- `pillow (>=10.1.0)`: For rasterising ASCII glyph templates and downscaling the canvas
 
 ## How does it work?
 
