@@ -214,10 +214,12 @@ def plot(
         typer.Option(
             "--dpi",
             metavar="INT",
-            help=("DPI used to get better quality matplotlib plot before rendering to terminal."),
+            help=("DPI used to rasterise the matplotlib plot. Setting this to 8"
+                  " (matching the renderer's subpixel width) skips the PIL resize"
+                  " for a faster path; higher values improve anti-aliasing quality."),
             show_default=True,
         ),
-    ] = 10,
+    ] = 8,
     example_files: Annotated[
         bool,
         typer.Option(

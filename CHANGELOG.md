@@ -17,13 +17,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   exact `render_numpy(image) -> (characters, fg_colors, bg_colors)` contract.
   All nine renderer names are preserved: `block`, `all`, `ascii`, `space`,
   `half`, `quad`, `braille`, `braille-bw`, `ascii-bw`.
+- Dropped Python 3.9 support (EOL since October 2025; no numpy wheel exists for
+  both 3.9 and 3.13).  Minimum is now Python 3.10.
+- The native renderer now has a fast path that skips the Pillow resize when the
+  matplotlib canvas dimensions already match the subpixel grid (achievable with
+  `--dpi 8`), and a row-averaged binreduce for the common 2:1 cell-aspect case.
 
 ### Fixed
 
 - Fixed a `ValueError: cannot reshape array` on high-DPI (Retina) displays
-  where `canvas.tostring_rgb()` returns a physically larger pixel buffer than
-  `canvas.get_width_height()` reports.  The reshape now detects the scale
-  factor and adjusts accordingly (`pixel_map/plotter.py`).
+  where the matplotlib canvas buffer is physically larger than
+  `get_width_height()` reports.  The reshape now uses
+  `get_width_height(physical=True)` and derives correct dimensions from the
+  buffer pixel count.
+- Replaced the removed `canvas.tostring_rgb()` with `canvas.buffer_rgba()` for
+  matplotlib 3.10+ compatibility.
 
 ### Removed
 

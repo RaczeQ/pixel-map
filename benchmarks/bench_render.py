@@ -46,9 +46,11 @@ RENDERER_NAMES = list(AVAILABLE_RENDERERS.keys())
 # Representative terminal canvas sizes.
 # console_width=80, console_height=24 with a border => 78 x 21 cells;
 # matplotlib canvas at dpi=10 is figsize=(78, 42) => ~780 x 420 px.
+# For the *fast path* (no PIL resize), use dpi=8 = SUB_W so the canvas width
+# exactly matches the subpixel grid.
 DEFAULT_WIDTH = 78
 DEFAULT_HEIGHT = 21
-DEFAULT_DPI = 10
+DEFAULT_DPI = 8
 
 
 def make_synthetic_image(

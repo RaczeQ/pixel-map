@@ -43,7 +43,7 @@ def plot_geo_data(
     no_border: bool = False,
     console_width: int | None = None,
     console_height: int | None = None,
-    plotting_dpi: int = 10,
+    plotting_dpi: int = 8,
 ) -> None:
     """
     Plot the geo data into a terminal.

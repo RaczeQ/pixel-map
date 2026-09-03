@@ -426,13 +426,26 @@ def _render_dual(
     """
     H = terminal_height
     W = terminal_width
-    # Downsample the whole canvas to (W*sub_w, H*sub_h) in one shot.  The
-    # matplotlib figure is already 2:1 (cell aspect), so each cell becomes
-    # exactly ``sub_h x sub_w`` subpixels after resize.
+    # Downsample the whole canvas to (W*sub_w, H*sub_h).  The matplotlib figure
+    # is 2:1 (cell aspect), so each cell maps to ``sub_h x sub_w`` subpixels
+    # after the downscale.
     target_w = W * sub_w
     target_h = H * sub_h
-    pil_img = Image.fromarray(image)
-    small = np.asarray(pil_img.resize((target_w, target_h), Image.Resampling.BILINEAR))
+    img_h, img_w = image.shape[:2]
+    if img_w == target_w and img_h == target_h:
+        # Fast path: canvas already at target resolution.
+        small = image
+    elif img_w == target_w and img_h == target_h * 2:
+        # Width matches and height is exactly 2x (2:1 terminal cell aspect).
+        # Average pairs of rows — a fast integer-ratio downscale that avoids
+        # the overhead of a full PIL bilinear resize.
+        small = np.ascontiguousarray(image).reshape(target_h, 2, target_w, 3).mean(axis=1)
+        small = np.ascontiguousarray(small).astype(np.uint8)
+    else:
+        # General case: full bilinear resize via Pillow.
+        small = np.asarray(
+            Image.fromarray(image).resize((target_w, target_h), Image.Resampling.BILINEAR)
+        )
     small = np.ascontiguousarray(small)
     S = sub_h * sub_w
     # Reshape to (cells, S, 3) with cells ordered row-major (y, x).
