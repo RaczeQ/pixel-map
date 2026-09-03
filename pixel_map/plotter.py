@@ -158,16 +158,17 @@ def plot_geo_data(
 
         # buffer_rgba() replaces the deprecated (and removed in matplotlib 3.10)
         # tostring_rgb() method.  It returns RGBA data; we keep only RGB.
-        # On high-DPI displays (e.g. macOS Retina), get_width_height() reports
-        # logical pixels while the buffer holds the physical pixel count, which
-        # can be a scale factor larger in each dimension.
+        # On high-DPI displays (e.g. macOS Retina), get_width_height(physical=True)
+        # returns the physical pixel dimensions matching the buffer.  The fallback
+        # below handles older backends that lack the physical= parameter.
         image_flat = np.frombuffer(canvas.buffer_rgba(), dtype="uint8")  # (H * W * 4,)
-        canvas_w, canvas_h = canvas.get_width_height()
+        canvas_w, canvas_h = canvas.get_width_height(physical=True)
         total_pixels = len(image_flat) // 4
         if canvas_w * canvas_h != total_pixels:
-            scale = round((total_pixels / (canvas_w * canvas_h)) ** 0.5)
-            canvas_w *= scale
-            canvas_h *= scale
+            # Derive actual physical dimensions from the pixel count and the
+            # logical aspect ratio, avoiding lossy rounding of the scale factor.
+            canvas_h = round((total_pixels * canvas_h / canvas_w) ** 0.5)
+            canvas_w = total_pixels // canvas_h
         image = image_flat.reshape(canvas_h, canvas_w, 4)[:, :, :3]
 
     with _get_progress_object(console) as progress:

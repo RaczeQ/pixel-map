@@ -7,7 +7,7 @@ renderer, both on a synthetic RGB canvas and on real matplotlib output.
 Usage::
 
     pdm run python benchmarks/bench_render.py
-    pdm run python benchmarks/bench_render.py --repeats 5 --renderer block
+     pdm run python benchmarks/bench_render.py --repeats 5 --renderers block
 
 Baseline (img2unicode on ``main``, 78x21 cells @ dpi=10, synthetic gradient):
 
@@ -164,6 +164,7 @@ def run_full_pipeline(
             plot_geo_data(
                 [example_path],
                 renderer=name,
+                basemap_provider="CartoDB.DarkMatterNoLabels",
                 console_width=100,
                 console_height=30,
             )
@@ -173,6 +174,7 @@ def run_full_pipeline(
             plot_geo_data(
                 [example_path],
                 renderer=name,
+                basemap_provider="CartoDB.DarkMatterNoLabels",
                 console_width=100,
                 console_height=30,
             )
@@ -198,6 +200,14 @@ def main() -> None:
         "--example", default=None, help="Run full-pipeline benchmark on an example file"
     )
     args = parser.parse_args()
+
+    if args.repeats < 1:
+        parser.error("--repeats must be at least 1")
+    if args.warmup < 0:
+        parser.error("--warmup must be non-negative")
+    for r in args.renderers:
+        if r not in AVAILABLE_RENDERERS:
+            parser.error(f"Unknown renderer '{r}'. Available: {', '.join(RENDERER_NAMES)}")
 
     run_bench(args.renderers, args.width, args.height, args.dpi, args.repeats, args.warmup)
 

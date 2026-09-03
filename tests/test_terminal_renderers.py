@@ -42,7 +42,7 @@ def _solid_image(color: tuple[int, int, int], w: int = 80, h: int = 80) -> np.nd
     return img
 
 
-@pytest.mark.parametrize("name", COLOR_RENDERERS + BW_RENDERERS)
+@pytest.mark.parametrize("name", COLOR_RENDERERS + BW_RENDERERS)  # type: ignore
 def test_render_numpy_shapes_and_dtype(name: str) -> None:
     """Output shapes are (H, W) cells and characters are integer codepoints."""
     renderer = _make_renderer(name)
@@ -56,7 +56,7 @@ def test_render_numpy_shapes_and_dtype(name: str) -> None:
         assert chr(c) in _CHARSETS[name]
 
 
-@pytest.mark.parametrize("name", COLOR_RENDERERS)
+@pytest.mark.parametrize("name", COLOR_RENDERERS)  # type: ignore
 def test_render_numpy_returns_colors(name: str) -> None:
     """Colour renderers return ``(H, W, 3)`` uint8 colour arrays."""
     renderer = _make_renderer(name)
@@ -70,7 +70,7 @@ def test_render_numpy_returns_colors(name: str) -> None:
     assert bg.dtype == np.uint8
 
 
-@pytest.mark.parametrize("name", BW_RENDERERS)
+@pytest.mark.parametrize("name", BW_RENDERERS)  # type: ignore
 def test_render_numpy_monochrome_returns_none(name: str) -> None:
     """Monochrome renderers return ``None`` for both colours."""
     renderer = _make_renderer(name)
@@ -82,7 +82,7 @@ def test_render_numpy_monochrome_returns_none(name: str) -> None:
     assert chars.shape == (TERMINAL_H, TERMINAL_W)
 
 
-@pytest.mark.parametrize("name", COLOR_RENDERERS)
+@pytest.mark.parametrize("name", COLOR_RENDERERS)  # type: ignore
 def test_solid_color_background_matches(name: str) -> None:
     """A uniformly coloured image yields a background equal to that colour."""
     color = (255, 0, 0)
@@ -162,7 +162,7 @@ def test_monochrome_density_gradient() -> None:
     image[h // 2 :] = 245
     chars, fg, bg = renderer.render_numpy(image)
 
-    assert fg is None and bg is None
+    assert fg is bg is None
     top_densities = [
         bin(int(chars[y, x]) - 0x2800).count("1")
         for y in range(TERMINAL_H // 2)

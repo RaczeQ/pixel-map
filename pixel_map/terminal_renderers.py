@@ -221,9 +221,8 @@ def _rasterize_ascii_font(size: int = 64) -> list[tuple[int, np.ndarray]]:
     """
     Rasterise printable ASCII glyphs into ``(codepoint, template)`` pairs.
 
-    Uses the Pillow default (Aileron) TrueType font so the result is
-    deterministic and dependency-free.  Glyphs are rendered at ``size`` px and
-    down-scaled + binarised to ``SUB_H x SUB_W``.
+    Uses the Pillow default (Aileron) TrueType font so the result is deterministic and dependency-
+    free.  Glyphs are rendered at ``size`` px and down-scaled + binarised to ``SUB_H x SUB_W``.
     """
     font = ImageFont.load_default(size=size)
     result: list[tuple[int, np.ndarray]] = []
