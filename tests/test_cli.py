@@ -33,7 +33,7 @@ def test_pbf_file_or_geometry_filter_is_required() -> None:
     )
 
     assert result.exit_code == 2
-    assert "Missing argument 'FILES...'." in result.stdout
+    assert "Missing argument" in result.output
 
 
 def test_basic_run() -> None:

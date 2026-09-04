@@ -162,7 +162,7 @@ $ pixel-map --example london_buildings --no-bg -r ascii-bw
 
 - `numpy (>=1.26.0)`: For transforming matplotlib array into an image
 
-- `img2unicode[n2] (>=0.1a11)`: For transforming generated plot image into a list of unicode characters for the terminal
+- `pillow (>=10.1.0)`: For rasterising ASCII glyph templates and downscaling the canvas
 
 ## How does it work?
 
@@ -172,7 +172,10 @@ $ pixel-map --example london_buildings --no-bg -r ascii-bw
 4. Plot bounding box is expanded to the canvas ratio (based on terminal size).
 5. Basemap is loaded with `contextily`.
 6. Canvas is copied to the image as an `NumPy` array.
-7. `img2unicode` is used to render image using unicode characters with color.
+7. Image is downsampled and converted to a grid of Unicode characters with
+   foreground/background colours using the native dual-colour engine in
+   `pixel_map/terminal_renderers.py` (Lab perceptual distance, BLAS-accelerated
+   character selection).
 8. `Rich` string output is generated using the list of unicode characters with background and foreground colors.
 9. Output is printed to the console.
 
