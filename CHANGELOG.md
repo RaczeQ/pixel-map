@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-04
+
 ### Changed
 
 - Replaced the `img2unicode` dependency with a native dual-colour terminal
@@ -27,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   based on predefined brightness values, with denser templates for darker
   characters.
 - Replaced CARTO DarkMatter and Positron basemap providers with ESRI
-  World_Dark_Gray_Base and World_Light_Gray_Base respectively
+  World\_Dark\_Gray\_Base and World\_Light\_Gray\_Base respectively
 
 ### Fixed
 
@@ -108,7 +110,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Plotting basic functionality with CLI
 
-[Unreleased]: https://github.com/RaczeQ/pixel-map/compare/0.2.4...HEAD
+[Unreleased]: https://github.com/RaczeQ/pixel-map/compare/0.3.0...HEAD
+
+[0.3.0]: https://github.com/RaczeQ/pixel-map/compare/0.2.4...0.3.0
 
 [0.2.4]: https://github.com/RaczeQ/pixel-map/compare/0.2.3...0.2.4
 
