@@ -7,6 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Replaced the `img2unicode` dependency with a native dual-colour terminal
+  renderer (`pixel_map/terminal_renderers.py`).  The new engine rasterises
+  glyph templates (geometric for half/quad/braille/block, brightness-ordered
+  Bayer patterns for ASCII) and selects the best character per cell via a fully
+  vectorised Lab-distance optimisation, yielding a 4x-60x speed-up over
+  `img2unicode` while keeping the exact `render_numpy(image) -> (characters, fg_colors, bg_colors)`
+  contract.  All nine renderer names are preserved: `block`, `all`, `ascii`, `space`,
+  `half`, `quad`, `braille`, `braille-bw`, `ascii-bw`.
+- Dropped Python 3.9 support (EOL since October 2025; no numpy wheel exists for
+  both 3.9 and 3.13).  Minimum is now Python 3.10.
+- The native renderer now has a fast path that skips the Pillow resize when the
+  matplotlib canvas dimensions already match the subpixel grid (achievable with
+  `--dpi 8`), and a row-averaged binreduce for the common 2:1 cell-aspect case.
+- ASCII renderer now uses brightness-ordered templates with Bayer dithering
+  instead of Pillow-font rasterization.  Characters are assigned templates
+  based on predefined brightness values, with denser templates for darker
+  characters.
+- Replaced CARTO DarkMatter and Positron basemap providers with ESRI
+  World_Dark_Gray_Base and World_Light_Gray_Base respectively
+
+### Fixed
+
+- Fixed a `ValueError: cannot reshape array` on high-DPI (Retina) displays
+  where the matplotlib canvas buffer is physically larger than
+  `get_width_height()` reports.  The reshape now uses
+  `get_width_height(physical=True)` and derives correct dimensions from the
+  buffer pixel count.
+- Replaced the removed `canvas.tostring_rgb()` with `canvas.buffer_rgba()` for
+  matplotlib 3.10+ compatibility.
+
+### Removed
+
+- `img2unicode` (and its transitive heavy dependencies `scikit-image`,
+  `scikit-learn` and the Linux-only `n2` ANN library) are no longer required.
+  `pillow` is now a direct dependency.
+
 ## [0.2.4] - 2024-11-14
 
 ### Fixed

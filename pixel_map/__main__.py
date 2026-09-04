@@ -1,7 +1,7 @@
 """Main CLI module."""
 
 from contextlib import suppress
-from typing import Annotated, Optional, cast
+from typing import Annotated, cast
 
 import click
 import typer
@@ -89,7 +89,7 @@ def plot(
         ),
     ],
     bbox: Annotated[
-        Optional[str],
+        str | None,
         typer.Option(
             "--bbox",
             "-b",
@@ -126,7 +126,7 @@ def plot(
         ),
     ] = True,
     colors: Annotated[
-        Optional[str],
+        str | None,
         typer.Option(
             "--color",
             "-c",
@@ -136,7 +136,7 @@ def plot(
         ),
     ] = None,
     alphas: Annotated[
-        Optional[str],
+        str | None,
         typer.Option(
             "--alpha",
             "--opacity",
@@ -147,7 +147,7 @@ def plot(
         ),
     ] = None,
     basemap_provider: Annotated[
-        Optional[str],
+        str | None,
         typer.Option(
             "--basemap",
             "--tileset",
@@ -155,8 +155,8 @@ def plot(
             metavar="TILES",
             help=(
                 "Set the basemap provider. Can be any value parsed by xyzservices library."
-                " Defaults to [bold dark_orange]CartoDB.DarkMatterNoLabels[/bold dark_orange]"
-                " if --dark or [bold dark_orange]CartoDB.PositronNoLabels[/bold dark_orange]"
+                " Defaults to [bold dark_orange]ESRI World_Dark_Gray_Base[/bold dark_orange]"
+                " if --dark or [bold dark_orange]ESRI World_Light_Gray_Base[/bold dark_orange]"
                 " if --light."
             ),
             show_default=False,
@@ -182,7 +182,7 @@ def plot(
         ),
     ] = False,
     background_color: Annotated[
-        Optional[str],
+        str | None,
         typer.Option(
             "--background-color",
             "--bg-color",
@@ -192,7 +192,7 @@ def plot(
         ),
     ] = None,
     console_width: Annotated[
-        Optional[int],
+        int | None,
         typer.Option(
             "--width",
             metavar="INT",
@@ -201,7 +201,7 @@ def plot(
         ),
     ] = None,
     console_height: Annotated[
-        Optional[int],
+        int | None,
         typer.Option(
             "--height",
             metavar="INT",
@@ -214,10 +214,12 @@ def plot(
         typer.Option(
             "--dpi",
             metavar="INT",
-            help=("DPI used to get better quality matplotlib plot before rendering to terminal."),
+            help=("DPI used to rasterise the matplotlib plot. Setting this to 8"
+                  " (matching the renderer's subpixel width) skips the PIL resize"
+                  " for a faster path; higher values improve anti-aliasing quality."),
             show_default=True,
         ),
-    ] = 10,
+    ] = 8,
     example_files: Annotated[
         bool,
         typer.Option(
@@ -231,7 +233,7 @@ def plot(
         ),
     ] = False,
     version: Annotated[
-        Optional[bool],
+        bool | None,
         typer.Option(
             "--version",
             "-v",
@@ -285,11 +287,11 @@ def plot(
     if no_background:
         basemap_provider = None
 
-    parsed_colors: Optional[list[str]] = colors  # type: ignore[assignment]
+    parsed_colors: list[str] | None = colors  # type: ignore[assignment]
     if not parsed_colors:
         parsed_colors = [color]
 
-    parsed_alphas: Optional[list[float]] = alphas  # type: ignore[assignment]
+    parsed_alphas: list[float] | None = alphas  # type: ignore[assignment]
     if not parsed_alphas:
         parsed_alphas = [1]
 
@@ -308,7 +310,7 @@ def plot(
         plot_geo_data(
             files,
             renderer=renderer,
-            bbox=cast("Optional[tuple[float, float, float, float]]", bbox),
+            bbox=cast("tuple[float, float, float, float] | None", bbox),
             color=parsed_colors,
             alpha=parsed_alphas,
             basemap_provider=basemap_provider,

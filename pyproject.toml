@@ -6,15 +6,14 @@ authors = [{ name = "Kamil Raczycki", email = "kraczycki@kraina.ai" }]
 dependencies = [
     "rich>=12.0.0",
     "typer[all]>=0.9.0",
-    "img2unicode[n2]>=0.1a11; sys_platform != 'win32' and sys_platform != 'darwin'",
-    "img2unicode>=0.1a11; sys_platform == 'win32' or sys_platform == 'darwin'",
     "geopandas>=0.8",
     "numpy>=1.26.0",
     "contextily>=1",
     "matplotlib>=3.2.0",
     "pyarrow>=16.0.0",
+    "pillow>=10.1.0",
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 readme = "README.md"
 license = { text = "MIT" }
 classifiers = [
@@ -24,10 +23,10 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Operating System :: Unix",
     "Operating System :: MacOS",
     "Operating System :: Microsoft :: Windows",
@@ -69,12 +68,12 @@ post_install = "pre-commit install"
 
 [tool.black]
 line-length = 100
-target-version = ["py39", "py310", "py311", "py312"]
+target-version = ["py310", "py311", "py312", "py313"]
 preview = true
 
 [tool.ruff]
 line-length = 100
-target-version = "py39"
+target-version = "py310"
 extend-exclude = ["old"]
 
 [tool.ruff.lint]
@@ -113,6 +112,12 @@ disallow_untyped_defs = true
 no_implicit_optional = true
 check_untyped_defs = true
 warn_return_any = true
+
+# Bare ``np.ndarray`` annotations are idiomatic in this codebase; the [type-arg]
+# rule (enabled by ``strict``) is overly strict for numpy code.
+[[tool.mypy.overrides]]
+module = "pixel_map.terminal_renderers"
+disallow_any_generics = false
 
 [tool.docformatter]
 syntax = 'google'
