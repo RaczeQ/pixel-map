@@ -155,8 +155,8 @@ def plot(
             metavar="TILES",
             help=(
                 "Set the basemap provider. Can be any value parsed by xyzservices library."
-                " Defaults to [bold dark_orange]CartoDB.DarkMatterNoLabels[/bold dark_orange]"
-                " if --dark or [bold dark_orange]CartoDB.PositronNoLabels[/bold dark_orange]"
+                " Defaults to [bold dark_orange]ESRI World_Dark_Gray_Base[/bold dark_orange]"
+                " if --dark or [bold dark_orange]ESRI World_Light_Gray_Base[/bold dark_orange]"
                 " if --light."
             ),
             show_default=False,

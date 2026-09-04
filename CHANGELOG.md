@@ -26,7 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   instead of Pillow-font rasterization.  Characters are assigned templates
   based on predefined brightness values, with denser templates for darker
   characters.
-- Replaced CARTO DarkMatter and Positron backgrounds with ESRI Light and Dark Canvas
+- Replaced CARTO DarkMatter and Positron basemap providers with ESRI
+  World_Dark_Gray_Base and World_Light_Gray_Base respectively
 
 ### Fixed
 
