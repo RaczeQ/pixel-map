@@ -32,7 +32,7 @@ dominated by BLAS and far cheaper than img2unicode's Python-level loops.
 from collections.abc import Callable
 
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image
 
 # Subpixel resolution per cell.  A terminal character cell is roughly 2:1
 # (twice as tall as wide); the 8x8 template therefore faithfully represents a
@@ -54,6 +54,48 @@ _D65_Z = np.float32(1.08883)
 _EPS = np.float32(0.008856)
 _KAPPA = np.float32(7.872)
 _DELTA = np.float32(16.0 / 116.0)
+
+# Predefined brightness-ordered ASCII charset (70 characters).
+# Source: https://stackoverflow.com/a/74186686 (posted by chungaloider, CC BY-SA 4.0)
+# Ordered from darkest (highest visual weight) to lightest.
+_ASCII_CHARSET = (
+    "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,."
+    '"^`\' '
+)
+
+# Brightness values corresponding to each character in _ASCII_CHARSET.
+# These values represent the perceived brightness/density of each character.
+_ASCII_BRIGHTNESS = np.array(
+    [
+        0.0, 0.0751, 0.0829, 0.0848, 0.1227, 0.1403, 0.1559, 0.185, 0.2183,
+        0.2417, 0.2571, 0.2852, 0.2902, 0.2919, 0.3099, 0.3192, 0.3232, 0.3294,
+        0.3384, 0.3609, 0.3619, 0.3667, 0.3737, 0.3747, 0.3838, 0.3921, 0.396,
+        0.3984, 0.3993, 0.4075, 0.4091, 0.4101, 0.42, 0.423, 0.4247, 0.4274,
+        0.4293, 0.4328, 0.4382, 0.4385, 0.442, 0.4473, 0.4477, 0.4503, 0.4562,
+        0.458, 0.461, 0.4638, 0.4667, 0.4686, 0.4693, 0.4703, 0.4833, 0.4881,
+        0.4944, 0.4953, 0.4992, 0.5509, 0.5567, 0.5569, 0.5591, 0.5602, 0.5602,
+        0.565, 0.5776, 0.5777, 0.5818, 0.587, 0.5972, 0.5999, 0.6043, 0.6049,
+        0.6093, 0.6099, 0.6465, 0.6561, 0.6595, 0.6631, 0.6714, 0.6759, 0.6809,
+        0.6816, 0.6925, 0.7039, 0.7086, 0.7235, 0.7302, 0.7332, 0.7602, 0.7834,
+        0.8037, 0.9999,
+    ],
+    dtype=np.float32,
+)
+
+# Bayer 8x8 dither matrix for generating density-based templates.
+_BAYER_256 = np.array(
+    [
+        [0, 32, 8, 40, 2, 34, 10, 42],
+        [48, 16, 56, 24, 50, 18, 58, 26],
+        [12, 44, 4, 36, 14, 46, 6, 38],
+        [60, 28, 52, 20, 62, 30, 54, 32],
+        [0, 32, 8, 40, 2, 34, 10, 42],
+        [48, 16, 56, 24, 50, 18, 58, 26],
+        [12, 44, 4, 36, 14, 46, 6, 38],
+        [60, 28, 52, 20, 62, 30, 54, 32],
+    ],
+    dtype=np.float32,
+)
 
 
 def _rgb_to_lab(rgb: np.ndarray) -> np.ndarray:
@@ -173,18 +215,9 @@ def _quad_diag_tr_bl() -> np.ndarray:
     return t
 
 
-def _bayer_8x8() -> np.ndarray:
-    """An 8x8 Bayer ordered-dither matrix with values in [0, 16)."""
-    base = np.array(
-        [[0, 8, 2, 10], [12, 4, 14, 6], [2, 10, 0, 8], [14, 6, 12, 4]],
-        dtype=np.float32,
-    )
-    return np.tile(base, (2, 2))
-
-
-def _shade_pattern(threshold: float) -> np.ndarray:
-    """Dithered shade patch with ~``threshold/16`` density."""
-    return (_bayer_8x8() >= threshold).astype(bool)
+def _shareshold_pattern(threshold: int) -> np.ndarray:
+    """Dithered shade patch with density ~``threshold/64``."""
+    return (_BAYER_256 <= threshold).astype(bool)
 
 
 def _braille_template(codepoint: int) -> np.ndarray:
@@ -217,27 +250,64 @@ def _braille_template(codepoint: int) -> np.ndarray:
     return t
 
 
-def _rasterize_ascii_font(size: int = 64) -> list[tuple[int, np.ndarray]]:
+def _brightness_template(brightness: float) -> np.ndarray:
     """
-    Rasterise printable ASCII glyphs into ``(codepoint, template)`` pairs.
+    Generate a binary template for a given brightness level using Bayer ordering.
 
-    Uses the Pillow default (Aileron) TrueType font so the result is deterministic and dependency-
-    free.  Glyphs are rendered at ``size`` px and down-scaled + binarised to ``SUB_H x SUB_W``.
+    Higher brightness => denser pattern (more "on" subpixels).
+
+    Args:
+        brightness: Float in [0, 1]. 0 = empty, 1 = full.
+
+    Returns:
+        ``(SUB_H, SUB_W)`` boolean template.
     """
-    font = ImageFont.load_default(size=size)
+    threshold = brightness * 64.0  # Bayer matrix values are 0-63
+    return (_BAYER_256 <= threshold).astype(bool)
+
+
+def _generate_ascii_charset() -> list[tuple[int, np.ndarray]]:
+    """
+    Generate ASCII character templates ordered by predefined brightness values.
+
+    Uses the brightness values from https://stackoverflow.com/a/74186686 to
+    create density-based templates via Bayer ordering. Each character gets a
+    template whose density matches its perceived brightness.
+
+    Brightness values represent how much ink/ink-coverage a character has.
+    Characters with low brightness values (like ``$``) are visually dense and
+    get dense templates; characters with high brightness values (like `` ` ``)
+    are visually light and get sparse templates.
+
+    Returns:
+        List of ``(codepoint, template)`` pairs.
+    """
+    chars = list(_ASCII_CHARSET)
+    brightness_values = _ASCII_BRIGHTNESS[: len(chars)]
+
+    # Sort brightness values to get distinct density levels (65 levels as specified)
+    sorted_brightness = np.sort(np.unique(brightness_values))
+    n_levels = len(sorted_brightness)
+
+    # Create a mapping from brightness value to density level index
+    # This allows us to assign brightness to each character
+    brightness_to_level = {b: i for i, b in enumerate(sorted_brightness)}
+
     result: list[tuple[int, np.ndarray]] = []
-    for code in range(32, 127):
-        glyph = chr(code)
-        img = Image.new("L", (size, size), 0)
-        draw = ImageDraw.Draw(img)
-        bb = font.getbbox(glyph)
-        advance = font.getlength(glyph)
-        x = (size - advance) / 2.0
-        y = (size - (bb[3] - bb[1])) / 2.0 - bb[1]
-        draw.text((x, y), glyph, font=font, fill=255)
-        arr = np.array(img.resize((SUB_W, SUB_H), Image.Resampling.LANCZOS))
-        mask = arr > 127
-        result.append((code, mask))
+    for char, brightness in zip(chars, brightness_values, strict=True):
+        level_idx = brightness_to_level[float(brightness)]
+        # Map level to density in [0, 1] range.
+        # Brightness values go from 0 (darkest char like $) to ~1 (lightest char like space).
+        # We want darkest chars to have the densest templates (density=1) and lightest chars
+        # to have the sparest templates (density=0). So we invert: density = 1 - level_idx/max
+        density = 1.0 - (level_idx / max(n_levels - 1, 1))
+        template = _brightness_template(density)
+        # Space character gets a truly empty template so it renders as "nothing"
+        # (invisible on any background), matching the behavior of braille's U+2800.
+        if char == " ":
+            template = np.zeros((SUB_H, SUB_W), dtype=bool)
+        result.append((ord(char), template))
+
     return result
 
 
@@ -251,9 +321,9 @@ _BLOCK_GEOMETRIC: list[tuple[int, np.ndarray]] = [
     (ord("▄"), _half_bottom()),
     (ord("▌"), _quad_left()),
     (ord("▐"), _quad_right()),
-    (ord("░"), _shade_pattern(12.0)),  # ~25 % density
-    (ord("▒"), _shade_pattern(8.0)),    # ~50 % density
-    (ord("▓"), _shade_pattern(4.0)),    # ~75 % density
+    (ord("░"), _shareshold_pattern(16)),  # ~25 % density
+    (ord("▒"), _shareshold_pattern(32)),    # ~50 % density
+    (ord("▓"), _shareshold_pattern(48)),    # ~75 % density
 ]
 
 _HALF_GEOMETRIC: list[tuple[int, np.ndarray]] = [
@@ -278,7 +348,7 @@ _BRAILLE_GEOMETRIC: list[tuple[int, np.ndarray]] = [
     (i, _braille_template(i)) for i in range(0x2800, 0x28FF + 1)
 ]
 
-_ASCII_FONT = _rasterize_ascii_font()
+_ASCII_FONT = _generate_ascii_charset()
 
 _ALL_SET: list[tuple[int, np.ndarray]] = _ASCII_FONT + _BLOCK_GEOMETRIC + _BRAILLE_GEOMETRIC
 
@@ -472,7 +542,11 @@ def _render_dual(
     characters = codes.reshape(H, W).astype(np.int32)
     fg, bg = _colors_for_best(charset, patches_rgb, best_idx, H, W)
 
-    return characters, fg.astype(np.uint8), bg.astype(np.uint8)
+    return (
+        characters,
+        fg.astype(np.uint8) if fg is not None else None,
+        bg.astype(np.uint8) if bg is not None else None,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -511,7 +585,7 @@ class _DualRenderer(TerminalRenderer):
     def render_numpy(
         self, image: np.ndarray
     ) -> tuple[np.ndarray, np.ndarray | None, np.ndarray | None]:
-        return _render_dual(
+        characters, fg, bg = _render_dual(
             image,
             _get_charset(self._charset_name),
             self.terminal_height,
@@ -520,6 +594,17 @@ class _DualRenderer(TerminalRenderer):
             sub_w=SUB_W,
             monochrome=self._monochrome,
         )
+        # For ASCII renderer: replace characters where fg ≈ bg (uniform cells)
+        # with space.  For uniform cells the character is invisible regardless of
+        # which glyph is chosen, but showing a dense character like '$' in the
+        # raw text is confusing.  Space (codepoint 32) is the neutral "nothing".
+        if not self._monochrome and fg is not None and bg is not None:
+            if self._charset_name in ("ascii", "all"):
+                fg_bg_diff = np.abs(fg.astype(np.int16) - bg.astype(np.int16))
+                uniform_mask = (fg_bg_diff < 12).all(axis=-1)  # (H, W)
+                space_code = np.int32(ord(" "))
+                characters = np.where(uniform_mask, space_code, characters)
+        return characters, fg, bg
 
 
 # Factory functions (identical names + signature as the old img2unicode ones).

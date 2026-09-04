@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 
 from pixel_map.terminal_renderers import (
+    _ASCII_CHARSET,
     AVAILABLE_RENDERERS,
     TerminalRenderer,
     _get_charset,
@@ -14,8 +15,11 @@ BW_RENDERERS = ["ascii-bw", "braille-bw"]
 TERMINAL_W = 10
 TERMINAL_H = 8
 
+_ASCII_SET = set(_ASCII_CHARSET)
+
 
 def _make_renderer(name: str) -> TerminalRenderer:
+    """Create a renderer with the default terminal dimensions."""
     return AVAILABLE_RENDERERS[name](terminal_width=TERMINAL_W, terminal_height=TERMINAL_H)
 
 
@@ -25,11 +29,11 @@ _CHARSETS = {
     "half": "▀▄",
     "quad": "▘▝▖▗▀▄▌▐▚▞",
     "braille": {chr(0x2800 + n) for n in range(256)},
-    "ascii": {chr(c) for c in range(32, 127)},
-    "all": ({chr(c) for c in range(32, 127)} | set("█▀▄▌▐░▒▓")
+    "ascii": _ASCII_SET,
+    "all": (_ASCII_SET | set("█▀▄▌▐░▒▓")
              | {chr(0x2800 + n) for n in range(256)}),
     "space": " ",
-    "ascii-bw": {chr(c) for c in range(32, 127)},
+    "ascii-bw": _ASCII_SET,
     "braille-bw": {chr(0x2800 + n) for n in range(256)},
 }
 
