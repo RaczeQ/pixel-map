@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-05
+
 ### Changed
 
 - Replaced the `img2unicode` dependency with a native dual-colour terminal
@@ -108,7 +110,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Plotting basic functionality with CLI
 
-[Unreleased]: https://github.com/RaczeQ/pixel-map/compare/0.2.4...HEAD
+[Unreleased]: https://github.com/RaczeQ/pixel-map/compare/0.3.0...HEAD
+
+[0.3.0]: https://github.com/RaczeQ/pixel-map/compare/0.2.4...0.3.0
 
 [0.2.4]: https://github.com/RaczeQ/pixel-map/compare/0.2.3...0.2.4
 
