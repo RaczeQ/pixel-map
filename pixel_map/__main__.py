@@ -135,9 +135,11 @@ def plot(
             "-t",
             metavar="TILES",
             help=(
-                "Set the basemap provider. Can be any value parsed by xyzservices library."
-                " Defaults to [bold dark_orange]ESRI World_Dark_Gray_Base[/bold dark_orange]"
-                " if --dark or [bold dark_orange]ESRI World_Light_Gray_Base[/bold dark_orange]"
+                "Set the basemap. Can be a name of a basemaplibre style, or a URL or a path of"
+                " a MapLibre style JSON. Raster tiles (like names of xyzservices) need contextily"
+                " to be installed."
+                " Defaults to [bold dark_orange]OpenFreeMap.Dark[/bold dark_orange]"
+                " if --dark or [bold dark_orange]OpenFreeMap.Positron[/bold dark_orange]"
                 " if --light."
             ),
             show_default=False,
@@ -233,6 +235,7 @@ def plot(
     import warnings
 
     from pixel_map.plotter import (
+        BasemapError,
         get_predefined_dark_style,
         get_predefined_light_style,
         plot_geo_data,
@@ -288,19 +291,22 @@ def plot(
 
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore")
-        plot_geo_data(
-            files,
-            renderer=renderer,
-            bbox=cast("tuple[float, float, float, float] | None", bbox),
-            color=parsed_colors,
-            alpha=parsed_alphas,
-            basemap_provider=basemap_provider,
-            background_color=background_color or "black",
-            no_border=no_border,
-            console_width=console_width,
-            console_height=console_height,
-            plotting_dpi=plotting_dpi,
-        )
+        try:
+            plot_geo_data(
+                files,
+                renderer=renderer,
+                bbox=cast("tuple[float, float, float, float] | None", bbox),
+                color=parsed_colors,
+                alpha=parsed_alphas,
+                basemap_provider=basemap_provider,
+                background_color=background_color or "black",
+                no_border=no_border,
+                console_width=console_width,
+                console_height=console_height,
+                plotting_dpi=plotting_dpi,
+            )
+        except BasemapError as ex:
+            raise typer.BadParameter(str(ex)) from None
 
 
 def main() -> None:
