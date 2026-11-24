@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   a style JSON. Raster tiles (like names of `xyzservices`) still work if `contextily` is installed
 - Replaced the default ESRI basemap providers with OpenFreeMap Dark and Positron
 - Dropped Python 3.10 support (EOL since October 2026). Minimum is now Python 3.11
+- Minimum versions of `geopandas` (0.14) and `typer` (0.16): older ones do not work with current
+  versions of `shapely` and `click`
 
 ### Fixed
 
