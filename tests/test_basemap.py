@@ -11,6 +11,7 @@ import pytest
 from matplotlib import pyplot as plt
 from ml2drender import Renderer
 from pytest_mock import MockerFixture
+from rich.text import Text
 from typer.testing import CliRunner
 
 from pixel_map.__main__ import app
@@ -118,8 +119,9 @@ def test_raster_tiles_without_contextily(monkeypatch: pytest.MonkeyPatch) -> Non
     result = runner.invoke(app, ["--example", "monaco_buildings", "-t", "Esri.WorldImagery"])
 
     assert result.exit_code == 2
-    # The lines are wrapped in a box.
-    assert "pip install contextily" in " ".join(result.output.replace("│", " ").split())
+    # The lines are wrapped in a box and may be coloured.
+    output = Text.from_ansi(result.output).plain
+    assert "pip install contextily" in " ".join(output.replace("│", " ").split())
 
 
 def test_misspelled_style() -> None:

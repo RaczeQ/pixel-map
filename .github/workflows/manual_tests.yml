@@ -19,6 +19,7 @@ jobs:
       OS: ${{ matrix.os }}
       PYTHON: ${{ matrix.python-version }}
       COLUMNS: 120
+      PYTHONUTF8: 1
     steps:
       - uses: actions/checkout@v6
       - name: Setup Python ${{ matrix.python-version }}
@@ -47,6 +48,7 @@ jobs:
       OS: ${{ matrix.os }}
       PYTHON: ${{ matrix.python-version }}
       COLUMNS: 120
+      PYTHONUTF8: 1
     steps:
       - uses: actions/checkout@v6
       - name: Setup Python ${{ matrix.python-version }}
