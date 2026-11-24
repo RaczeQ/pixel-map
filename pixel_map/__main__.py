@@ -3,7 +3,6 @@
 from contextlib import suppress
 from typing import Annotated, cast
 
-import click
 import typer
 
 from pixel_map import __app_name__, __version__
@@ -30,53 +29,32 @@ def _version_callback(value: bool) -> None:
         raise typer.Exit()
 
 
-class BboxParser(click.ParamType):  # type: ignore
-    """Parser for bounding boxes."""
+def _parse_bbox(value: str) -> tuple[float, ...]:
+    with suppress(ValueError):  # ValueError raised when passing non-numbers to float()
+        bbox_values = tuple(float(x.strip()) for x in value.split(","))
+        if len(bbox_values) == 4:
+            return bbox_values
 
-    name = "BBOX"
-
-    def convert(self, value, param=None, ctx=None):  # type: ignore
-        """Convert parameter value."""
-        with suppress(ValueError):  # ValueError raised when passing non-numbers to float()
-            bbox_values = tuple(float(x.strip()) for x in value.split(","))
-            if len(bbox_values) == 4:
-                return bbox_values
-
-        raise typer.BadParameter(
-            "Cannot parse provided bounding box."
-            " Valid value must contain 4 floating point numbers"
-            " separated by commas."
-        ) from None
+    raise typer.BadParameter(
+        "Cannot parse provided bounding box."
+        " Valid value must contain 4 floating point numbers"
+        " separated by commas."
+    ) from None
 
 
-class ColorParser(click.ParamType):  # type: ignore
-    """Parser for colours."""
-
-    name = "COLOR"
-
-    def convert(self, value, param=None, ctx=None):  # type: ignore
-        """Convert parameter value."""
-        with suppress(ValueError):  # ValueError raised when passing non-numbers to float()
-            colors = [x.strip() for x in value.split(",")]
-            return colors
+def _parse_colors(value: str) -> list[str]:
+    return [x.strip() for x in value.split(",")]
 
 
-class AlphaParser(click.ParamType):  # type: ignore
-    """Parser for bounding boxes."""
+def _parse_alphas(value: str) -> list[float]:
+    with suppress(ValueError):  # ValueError raised when passing non-numbers to float()
+        return [float(x.strip()) for x in value.split(",")]
 
-    name = "FLOAT"
-
-    def convert(self, value, param=None, ctx=None):  # type: ignore
-        """Convert parameter value."""
-        with suppress(ValueError):  # ValueError raised when passing non-numbers to float()
-            alpha_values = [float(x.strip()) for x in value.split(",")]
-            return alpha_values
-
-        raise typer.BadParameter(
-            "Cannot parse provided alpha values."
-            " Valid value must contain floating point numbers"
-            " separated by commas."
-        ) from None
+    raise typer.BadParameter(
+        "Cannot parse provided alpha values."
+        " Valid value must contain floating point numbers"
+        " separated by commas."
+    ) from None
 
 
 @app.command()  # type: ignore
@@ -97,7 +75,8 @@ def plot(
                 "Clip the map to a given [bold dark_orange]bounding box[/bold dark_orange]."
                 " Expects 4 floating point numbers separated by commas."
             ),
-            click_type=BboxParser(),
+            parser=_parse_bbox,
+            metavar="BBOX",
             show_default=False,
         ),
     ] = None,
@@ -131,7 +110,8 @@ def plot(
             "--color",
             "-c",
             help=("Pass color or list of colours per each geo file."),
-            click_type=ColorParser(),
+            parser=_parse_colors,
+            metavar="COLOR",
             show_default=False,
         ),
     ] = None,
@@ -142,7 +122,8 @@ def plot(
             "--opacity",
             "-a",
             help=("Pass opacity or list of opacities per each geo file."),
-            click_type=AlphaParser(),
+            parser=_parse_alphas,
+            metavar="FLOAT",
             show_default=False,
         ),
     ] = None,
@@ -154,9 +135,11 @@ def plot(
             "-t",
             metavar="TILES",
             help=(
-                "Set the basemap provider. Can be any value parsed by xyzservices library."
-                " Defaults to [bold dark_orange]ESRI World_Dark_Gray_Base[/bold dark_orange]"
-                " if --dark or [bold dark_orange]ESRI World_Light_Gray_Base[/bold dark_orange]"
+                "Set the basemap. Can be a name of a basemaplibre style, or a URL or a path of"
+                " a MapLibre style JSON. Raster tiles (like names of xyzservices) need contextily"
+                " to be installed."
+                " Defaults to [bold dark_orange]OpenFreeMap.Dark[/bold dark_orange]"
+                " if --dark or [bold dark_orange]OpenFreeMap.Positron[/bold dark_orange]"
                 " if --light."
             ),
             show_default=False,
@@ -252,6 +235,7 @@ def plot(
     import warnings
 
     from pixel_map.plotter import (
+        BasemapError,
         get_predefined_dark_style,
         get_predefined_light_style,
         plot_geo_data,
@@ -307,19 +291,22 @@ def plot(
 
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore")
-        plot_geo_data(
-            files,
-            renderer=renderer,
-            bbox=cast("tuple[float, float, float, float] | None", bbox),
-            color=parsed_colors,
-            alpha=parsed_alphas,
-            basemap_provider=basemap_provider,
-            background_color=background_color or "black",
-            no_border=no_border,
-            console_width=console_width,
-            console_height=console_height,
-            plotting_dpi=plotting_dpi,
-        )
+        try:
+            plot_geo_data(
+                files,
+                renderer=renderer,
+                bbox=cast("tuple[float, float, float, float] | None", bbox),
+                color=parsed_colors,
+                alpha=parsed_alphas,
+                basemap_provider=basemap_provider,
+                background_color=background_color or "black",
+                no_border=no_border,
+                console_width=console_width,
+                console_height=console_height,
+                plotting_dpi=plotting_dpi,
+            )
+        except BasemapError as ex:
+            raise typer.BadParameter(str(ex)) from None
 
 
 def main() -> None:

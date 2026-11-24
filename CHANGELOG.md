@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-24
+
+### Added
+
+- Documentation website at <https://raczeq.github.io/pixel-map/>
+
+### Changed
+
+- Basemaps are drawn by `basemaplibre` from MapLibre styles, without labels, instead of raster tiles
+  loaded by `contextily`. `--basemap` takes a name of a `basemaplibre` style, or a URL or a path of
+  a style JSON. Raster tiles (like names of `xyzservices`) still work if `contextily` is installed
+- Replaced the default ESRI basemap providers with OpenFreeMap Dark and Positron
+- Dropped Python 3.10 support (EOL since October 2026). Minimum is now Python 3.11
+- Minimum versions of `geopandas` (0.14) and `typer` (0.16): older ones do not work with current
+  versions of `shapely` and `click`
+
+### Fixed
+
+- Starting with Typer 0.29, which dropped `click_type`
+- Names of the values of `--bbox`, `--color` and `--alpha` in the help with Typer 0.27
+- A basemap that cannot be drawn is reported without a traceback
+- Order of the dots of Braille patterns in the `braille`, `braille-bw` and `all` renderers
+
 ## [0.3.0] - 2026-09-05
 
 ### Changed
@@ -110,7 +133,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Plotting basic functionality with CLI
 
-[Unreleased]: https://github.com/RaczeQ/pixel-map/compare/0.3.0...HEAD
+[Unreleased]: https://github.com/RaczeQ/pixel-map/compare/0.4.0...HEAD
+
+[0.4.0]: https://github.com/RaczeQ/pixel-map/compare/0.3.0...0.4.0
 
 [0.3.0]: https://github.com/RaczeQ/pixel-map/compare/0.2.4...0.3.0
 

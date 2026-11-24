@@ -7,16 +7,17 @@ jobs:
   run-tests:
     name: "Run tests job"
     uses: ./.github/workflows/_tests.yml
-    secrets: inherit
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   build-n-publish:
     name: Build and publish Python 🐍 distributions 📦 to PyPI
     needs: [run-tests]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: 3.12
       - uses: pdm-project/setup-pdm@v3
@@ -29,3 +30,15 @@ jobs:
           cache-dependency-path: "**/pdm.lock"
       - name: Publish distribution 📦 to PyPI
         run: pdm publish --repository pypi --username __token__ --password ${{ secrets.PYPI_API_TOKEN }} --verbose
+
+  docs:
+    name: Start the build of docs 📚
+    needs: [build-n-publish]
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - run: gh workflow run docs.yml --ref main
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}

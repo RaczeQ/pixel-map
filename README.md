@@ -9,24 +9,16 @@ Python CLI tool for plotting geo data in the terminal
 <p align="center">
     <img alt="GitHub" src="https://img.shields.io/github/license/raczeq/pixel-map?logo=mit&logoColor=%23fff">
     <img src="https://img.shields.io/github/checks-status/raczeq/pixel-map/main?logo=GitHubActions&logoColor=%23fff" alt="Checks">
-    <a href="https://github.com/raczeq/pixel-map/actions/workflows/ci-prod.yml" target="_blank">
-        <img alt="GitHub Workflow Status - PROD" src="https://img.shields.io/github/actions/workflow/status/raczeq/pixel-map/ci-prod.yml?label=build-prod&logo=GitHubActions&logoColor=%23fff">
-    </a>
-    <a href="https://results.pre-commit.ci/latest/github/raczeq/pixel-map/main" target="_blank">
-        <img src="https://results.pre-commit.ci/badge/github/raczeq/pixel-map/main.svg" alt="pre-commit.ci status">
-    </a>
+    <a href="https://github.com/raczeq/pixel-map/actions/workflows/ci-prod.yml" target="_blank"><img alt="GitHub Workflow Status - PROD" src="https://img.shields.io/github/actions/workflow/status/raczeq/pixel-map/ci-prod.yml?label=build-prod&logo=GitHubActions&logoColor=%23fff"></a>
+    <a href="https://results.pre-commit.ci/latest/github/raczeq/pixel-map/main" target="_blank"><img src="https://results.pre-commit.ci/badge/github/raczeq/pixel-map/main.svg" alt="pre-commit.ci status"></a>
     <a href="https://www.codefactor.io/repository/github/raczeq/pixel-map"><img alt="CodeFactor Grade" src="https://img.shields.io/codefactor/grade/github/raczeq/pixel-map?logo=codefactor&logoColor=%23fff"></a>
     <a href="https://app.codecov.io/gh/raczeq/pixel-map/tree/main"><img alt="Codecov" src="https://img.shields.io/codecov/c/github/raczeq/pixel-map?logo=codecov&token=PRS4E02ZX0&logoColor=%23fff"></a>
-    <a href="https://pypi.org/project/pixel-map" target="_blank">
-        <img src="https://img.shields.io/pypi/v/pixel-map?color=%2334D058&label=pypi%20package&logo=pypi&logoColor=%23fff" alt="Package version">
-    </a>
-    <a href="https://pypi.org/project/pixel-map" target="_blank">
-        <img src="https://img.shields.io/pypi/pyversions/pixel-map.svg?color=%2334D058&logo=python&logoColor=%23fff" alt="Supported Python versions">
-    </a>
-    <a href="https://pypi.org/project/pixel-map" target="_blank">
-        <img alt="PyPI - Downloads" src="https://img.shields.io/pypi/dm/pixel-map">
-    </a>
+    <a href="https://pypi.org/project/pixel-map" target="_blank"><img src="https://img.shields.io/pypi/v/pixel-map?color=%2334D058&label=pypi%20package&logo=pypi&logoColor=%23fff" alt="Package version"></a>
+    <a href="https://pypi.org/project/pixel-map" target="_blank"><img src="https://img.shields.io/pypi/pyversions/pixel-map.svg?color=%2334D058&logo=python&logoColor=%23fff" alt="Supported Python versions"></a>
+    <a href="https://pypi.org/project/pixel-map" target="_blank"><img alt="PyPI - Downloads" src="https://img.shields.io/pypi/dm/pixel-map"></a>
 </p>
+
+[Documentation](https://raczeq.github.io/pixel-map/) · [Examples](https://raczeq.github.io/pixel-map/examples/) · [Basemaps](https://raczeq.github.io/pixel-map/basemaps/) · [Renderers](https://raczeq.github.io/pixel-map/renderers/)
 
 ## Installation
 
@@ -60,38 +52,42 @@ See more examples below ⬇️
   <summary>CLI Help output (<code>pixel-map -h</code>)</summary>
 
 ```console
- Usage: pixel-map [OPTIONS] FILES...
+ Usage: pixel-map [OPTIONS] {files}...
 
  Plot the geo data into a terminal.
+
  Generates a Matplotlib canvas that is rendered to an image and later transformed into a list of
  unicode characters.
 
-╭─ Arguments ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ *    files      FILES...  List of files to display. Those could be any that can be opened by GeoPandas. [required]                                                                │
-╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-╭─ Options ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ --bbox                         -b             BBOX   Clip the map to a given bounding box. Expects 4 floating point numbers separated by commas.                                  │
-│ --renderer                     -r             TEXT   Renderer used for generating terminal output. Possible values: all, ascii, ascii-bw, block, braille, braille-bw, half, quad, │
-│                                                      space.                                                                                                                       │
-│                                                      [default: (block)]                                                                                                           │
-│ --dark                             --light           Uses the predefined dark or light style. Can be overriden with user defined style. [default: dark]                           │
-│ --color                        -c             COLOR  Pass color or list of colours per each geo file.                                                                             │
-│ --alpha,--opacity              -a             FLOAT  Pass opacity or list of opacities per each geo file.                                                                         │
-│ --basemap,--tileset            -t             TILES  Set the basemap provider. Can be any value parsed by xyzservices library. Defaults to CartoDB.DarkMatterNoLabels if --dark   │
-│                                                      or CartoDB.PositronNoLabels if --light.                                                                                      │
-│ --no-border,--fullscreen       -f                    Removes the border around the map.                                                                                           │
-│ --no-background,--no-bg                              Removes the background of the map and plots only geo data.                                                                   │
-│ --background-color,--bg-color                 COLOR  Set the background color. Can be used together with --no-background.                                                         │
-│ --width                                       INT    Override the current console width.                                                                                          │
-│ --height                                      INT    Override the current console height.                                                                                         │
-│ --dpi                                         INT    DPI used to get better quality matplotlib plot before rendering to terminal. [default: 10]                                   │
-│ --example,--example-files                            Can be used to load one of example files based on name. Possible values: london_buildings, london_park, london_water,        │
-│                                                      monaco_buildings.                                                                                                            │
-│ --version                      -v                    Show the application's version and exit.                                                                                     │
-│ --install-completion                                 Install completion for the current shell.                                                                                    │
-│ --show-completion                                    Show completion for the current shell, to copy it or customize the installation.                                             │
-│ --help                         -h                    Show this message and exit.                                                                                                  │
-╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Arguments ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ *    files      <str>  List of files to display. Those could be any that can be opened by GeoPandas. [required]                                                                  │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --bbox                         -b             BBOX   Clip the map to a given bounding box. Expects 4 floating point numbers separated by commas.                                 │
+│ --renderer                     -r             <str>  Renderer used for generating terminal output. Possible values: all, ascii, ascii-bw, block, braille, braille-bw, half,      │
+│                                                      quad, space.                                                                                                                │
+│                                                      [default: (block)]                                                                                                          │
+│ --dark                             --light           Uses the predefined dark or light style. Can be overriden with user defined style. [default: dark]                          │
+│ --color                        -c             COLOR  Pass color or list of colours per each geo file.                                                                            │
+│ --alpha,--opacity              -a             FLOAT  Pass opacity or list of opacities per each geo file.                                                                        │
+│ --basemap,--tileset            -t             TILES  Set the basemap. Can be a name of a basemaplibre style, or a URL or a path of a MapLibre style JSON. Raster tiles (like     │
+│                                                      names of xyzservices) need contextily to be installed. Defaults to OpenFreeMap.Dark if --dark or OpenFreeMap.Positron if    │
+│                                                      --light.                                                                                                                    │
+│ --no-border,--fullscreen       -f                    Removes the border around the map.                                                                                          │
+│ --no-background,--no-bg                              Removes the background of the map and plots only geo data.                                                                  │
+│ --background-color,--bg-color                 COLOR  Set the background color. Can be used together with --no-background.                                                        │
+│ --width                                       INT    Override the current console width.                                                                                         │
+│ --height                                      INT    Override the current console height.                                                                                        │
+│ --dpi                                         INT    DPI used to rasterise the matplotlib plot. Setting this to 8 (matching the renderer's subpixel width) skips the PIL resize  │
+│                                                      for a faster path; higher values improve anti-aliasing quality.                                                             │
+│                                                      [default: 8]                                                                                                                │
+│ --example,--example-files                            Can be used to load one of example files based on name. Possible values: london_buildings, london_park, london_water,       │
+│                                                      monaco_buildings.                                                                                                           │
+│ --version                      -v                    Show the application's version and exit.                                                                                    │
+│ --install-completion                                 Install completion for the current shell.                                                                                   │
+│ --show-completion                                    Show completion for the current shell, to copy it or customize the installation.                                            │
+│ --help                         -h                    Show this message and exit.                                                                                                 │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 ```
 </details>
 
@@ -129,7 +125,7 @@ $ pixel-map --example london_buildings london_water london_park -c C1,C0,C2
 #### Different basemap and changed opacity (alpha)
 
 ```sh
-$ pixel-map --example london_water -c C0 -a 0.6 -t Esri.WorldImagery
+$ pixel-map --example london_water -c C0 -a 0.6 -t VersaTiles.Satellite
 ```
 <p align="center">
   <img src="https://raw.githubusercontent.com/RaczeQ/pixel-map/main/images/london_satellite.jpg"><br/>
@@ -137,7 +133,7 @@ $ pixel-map --example london_water -c C0 -a 0.6 -t Esri.WorldImagery
 
 #### No background and different renderer
 
-You can explore multiple available renderers. Full list available in the `pixel-map` CLI help.
+You can explore [multiple available renderers](https://raczeq.github.io/pixel-map/renderers/).
 
 ```sh
 $ pixel-map --example london_buildings --no-bg -r ascii-bw
@@ -158,7 +154,7 @@ $ pixel-map --example london_buildings --no-bg -r ascii-bw
 
 - `matplotlib (>=3.2.0)`: For generating the plot with styling and cropping
 
-- `contextily (>=1)`: For adding basemap to the plot
+- `basemaplibre (>=0.1.1)`: For adding basemap to the plot (raster tiles need `contextily`, which is not installed by default)
 
 - `numpy (>=1.26.0)`: For transforming matplotlib array into an image
 
@@ -170,7 +166,7 @@ $ pixel-map --example london_buildings --no-bg -r ascii-bw
 2. `Matplotlib` figure is created with the size of the terminal (`pixel-map` expects a default monospace font with the ratio of 8 to 16 pixels. Figure canvas takes terminal height and multiplies it by two).
 3. GeoSerieses are plotted to the canvas.
 4. Plot bounding box is expanded to the canvas ratio (based on terminal size).
-5. Basemap is loaded with `contextily`.
+5. Basemap is drawn with `basemaplibre` from a MapLibre style, without labels.
 6. Canvas is copied to the image as an `NumPy` array.
 7. Image is downsampled and converted to a grid of Unicode characters with
    foreground/background colours using the native dual-colour engine in

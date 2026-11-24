@@ -1,0 +1,8 @@
+nav:
+  - Home: index.md
+  - Examples: examples.md
+  - Basemaps: basemaps.md
+  - Renderers: renderers.md
+  - Command line: cli.md
+  - Python API: api.md
+  - Changelog: changelog.md
