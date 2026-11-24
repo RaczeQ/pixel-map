@@ -7,6 +7,7 @@ from pixel_map.terminal_renderers import (
     _ASCII_CHARSET,
     AVAILABLE_RENDERERS,
     TerminalRenderer,
+    _braille_template,
     _get_charset,
 )
 
@@ -154,6 +155,25 @@ def test_braille_codepoints_round_trip() -> None:
     chars, _, _ = renderer.render_numpy(image)
     for c in chars.flat:
         assert 0x2800 <= c <= 0x28FF
+
+
+@pytest.mark.parametrize(
+    "character,rows",
+    [
+        ("⡇", ["#.", "#.", "#.", "#."]),
+        ("⢸", [".#", ".#", ".#", ".#"]),
+        ("⠉", ["##", "..", "..", ".."]),
+        ("⣀", ["..", "..", "..", "##"]),
+        ("⠈", [".#", "..", "..", ".."]),
+        ("⡀", ["..", "..", "..", "#."]),
+    ],
+)  # type: ignore
+def test_braille_template_follows_unicode_layout(character: str, rows: list[str]) -> None:
+    """Dots of a template are where the character has them."""
+    dots = np.array([[dot == "#" for dot in row] for row in rows])
+    np.testing.assert_array_equal(
+        _braille_template(ord(character)), dots.repeat(2, axis=0).repeat(4, axis=1)
+    )
 
 
 def test_monochrome_density_gradient() -> None:
