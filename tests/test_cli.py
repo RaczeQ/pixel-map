@@ -4,6 +4,7 @@ import uuid
 
 import pytest
 from parametrization import Parametrization as P
+from rich.text import Text
 from typer.testing import CliRunner
 
 from pixel_map import __app_name__, __version__
@@ -34,6 +35,16 @@ def test_pbf_file_or_geometry_filter_is_required() -> None:
 
     assert result.exit_code == 2
     assert "Missing argument" in result.output
+
+
+def test_value_names_in_help() -> None:
+    """Test if names of the parsed values are in the help."""
+    result = runner.invoke(app, ["--help"], env={"COLUMNS": "200"})
+
+    assert result.exit_code == 0
+    lines = Text.from_ansi(result.output).plain.splitlines()
+    for option, name in [("--bbox", "BBOX"), ("--color", "COLOR"), ("--opacity", "FLOAT")]:
+        assert any(option in line and name in line for line in lines)
 
 
 def test_basic_run() -> None:
