@@ -6,6 +6,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
+import httpx
 import pytest
 from matplotlib import pyplot as plt
 from ml2drender import Renderer
@@ -127,3 +128,34 @@ def test_misspelled_style() -> None:
 
     assert result.exit_code == 2
     assert "OpenFreeMap.Positron" in result.output
+
+
+def test_missing_style() -> None:
+    """Test if a missing file of a style is reported."""
+    result = runner.invoke(app, ["--example", "monaco_buildings", "-t", "missing.json"])
+
+    assert result.exit_code == 2
+    assert "missing.json" in result.output
+
+
+def test_network_error(mocker: MockerFixture) -> None:
+    """Test if a style that cannot be downloaded is reported."""
+    mocker.patch(
+        "pixel_map.plotter.bml.add_basemap", side_effect=httpx.ConnectError("no connection")
+    )
+
+    result = runner.invoke(app, ["--example", "monaco_buildings"])
+
+    assert result.exit_code == 2
+    assert "no connection" in result.output
+
+
+def test_raster_error(monkeypatch: pytest.MonkeyPatch, mocker: MockerFixture) -> None:
+    """Test if errors of contextily are reported."""
+    add_basemap = mocker.Mock(side_effect=ValueError("no overlap"))
+    monkeypatch.setitem(sys.modules, "contextily", SimpleNamespace(add_basemap=add_basemap))
+
+    result = runner.invoke(app, ["--example", "monaco_buildings", "-t", "raster.tif"])
+
+    assert result.exit_code == 2
+    assert "no overlap" in result.output

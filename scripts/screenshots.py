@@ -70,8 +70,12 @@ def draw_character(
         [(0, 0), (1, 0), (2, 0), (0, 1), (1, 1), (2, 1), (3, 0), (3, 1)]
     ):
         if dots >> bit & 1:
-            center = x + WIDTH * (column + 0.5) / 2, y + HEIGHT * (row + 0.5) / 4
-            canvas.circle(center, WIDTH / 7, fill=color)
+            center_x, center_y = x + WIDTH * (column + 0.5) / 2, y + HEIGHT * (row + 0.5) / 4
+            radius = WIDTH / 7
+            canvas.ellipse(
+                (center_x - radius, center_y - radius, center_x + radius, center_y + radius),
+                fill=color,
+            )
 
 
 def draw(lines: list[list[Segment]]) -> Image.Image:

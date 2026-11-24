@@ -15,7 +15,7 @@ repos:
   # TODO: Switch back to upstream docformatter
   # after https://github.com/PyCQA/docformatter/issues/289 is fixed
   - repo: https://github.com/PyCQA/docformatter
-    rev: v1.7.7
+    rev: v1.7.8
     # rev: v1.7.5
     hooks:
       - id: docformatter

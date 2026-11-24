@@ -12,6 +12,7 @@ from typing import Any
 
 import basemaplibre as bml
 import geopandas as gpd
+import httpx
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
@@ -216,29 +217,29 @@ def get_predefined_light_style() -> tuple[str, str]:
 def _add_basemap(ax: Axes, source: str) -> None:
     """Draw a basemap without labels, which would not be readable in a terminal."""
     try:
-        bml.add_basemap(
-            ax,
-            source=source,
-            crs=3857,
-            attribution=False,
-            labels=False,
-            # A column of the terminal is an inch of the figure, in which matplotlib draws
-            # 96 CSS pixels of the style by default.
-            zoom_adjust=math.log2(CSS_PIXELS_PER_COLUMN / 96),
-            pixel_ratio=SUB_W / CSS_PIXELS_PER_COLUMN,
-        )
-    except TypeError:
-        # Not a MapLibre style, so there are no labels to drop: raster tiles and files are drawn by
-        # contextily, if it's installed.
         try:
+            bml.add_basemap(
+                ax,
+                source=source,
+                crs=3857,
+                attribution=False,
+                labels=False,
+                # A column of the terminal is an inch of the figure, in which matplotlib draws
+                # 96 CSS pixels of the style by default.
+                zoom_adjust=math.log2(CSS_PIXELS_PER_COLUMN / 96),
+                pixel_ratio=SUB_W / CSS_PIXELS_PER_COLUMN,
+            )
+        except TypeError:
+            # Not a MapLibre style, so there are no labels to drop: raster tiles and files are drawn
+            # by contextily, if it's installed.
             bml.add_basemap(ax, source=source, crs=3857, attribution=False)
-        except ImportError as ex:
-            raise BasemapError(
-                f"Basemap {source!r} is not a MapLibre style."
-                " Raster tiles need contextily: pip install contextily"
-            ) from ex
-    except ValueError as ex:
-        raise BasemapError(str(ex)) from ex
+    except ImportError as ex:
+        raise BasemapError(
+            f"Basemap {source!r} is not a MapLibre style."
+            " Raster tiles need contextily: pip install contextily"
+        ) from ex
+    except (ValueError, OSError, httpx.HTTPError) as ex:
+        raise BasemapError(f"Basemap {source!r} cannot be drawn: {ex}") from ex
 
 
 def _load_geo_data(
