@@ -230,16 +230,16 @@ def _braille_template(codepoint: int) -> np.ndarray:
     """
     bits = codepoint - 0x2800
     t = np.zeros((SUB_H, SUB_W), dtype=bool)
-    # Unicode dot numbering: dots 1-4 are the left column (top->bottom),
-    # dots 5-8 are the right column.
+    # Unicode dot numbering: dots 1-3 are the left column (top->bottom), dots 4-6 the right one,
+    # dots 7 and 8 the row added below them.
     positions = [
         (0, 0),  # dot 1
         (1, 0),  # dot 2
         (2, 0),  # dot 3
-        (3, 0),  # dot 4
-        (0, 1),  # dot 5
-        (1, 1),  # dot 6
-        (2, 1),  # dot 7
+        (0, 1),  # dot 4
+        (1, 1),  # dot 5
+        (2, 1),  # dot 6
+        (3, 0),  # dot 7
         (3, 1),  # dot 8
     ]
     for bit, (rg, cg) in enumerate(positions):

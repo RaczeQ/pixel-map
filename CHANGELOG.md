@@ -21,8 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Starting with Typer 0.29, which dropped `click_type`
 - Names of the values of `--bbox`, `--color` and `--alpha` in the help with Typer 0.27
 - A basemap that cannot be drawn is reported without a traceback
+- Order of the dots of Braille patterns in the `braille`, `braille-bw` and `all` renderers
 
 ## [0.3.0] - 2026-09-05
 
