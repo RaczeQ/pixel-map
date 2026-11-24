@@ -151,7 +151,7 @@ def run_full_pipeline(
     """
     Benchmark the full ``plot_geo_data`` pipeline end-to-end.
 
-    Requires network access for the contextily basemap.
+    Requires network access for the basemap.
     """
     from pixel_map.plotter import plot_geo_data
 
@@ -166,7 +166,7 @@ def run_full_pipeline(
             plot_geo_data(
                 [example_path],
                 renderer=name,
-                basemap_provider="CartoDB.DarkMatterNoLabels",
+                basemap_provider="OpenFreeMap.Dark",
                 console_width=100,
                 console_height=30,
             )
@@ -176,7 +176,7 @@ def run_full_pipeline(
             plot_geo_data(
                 [example_path],
                 renderer=name,
-                basemap_provider="CartoDB.DarkMatterNoLabels",
+                basemap_provider="OpenFreeMap.Dark",
                 console_width=100,
                 console_height=30,
             )

@@ -5,11 +5,12 @@ Generates a Matplotlib canvas that is rendered to an image and later transformed
 unicode characters.
 """
 
+import math
 import os
 from pathlib import Path
 from typing import Any
 
-import contextily as cx
+import basemaplibre as bml
 import geopandas as gpd
 import numpy as np
 from matplotlib import pyplot as plt
@@ -26,10 +27,19 @@ from rich.style import Style
 from rich.text import Text
 
 from pixel_map.renderers import AVAILABLE_RENDERERS
+from pixel_map.terminal_renderers import SUB_W
 
 TRANSFORMER = Transformer.from_crs("EPSG:4326", "EPSG:3857", always_xy=True)
 
 EPSG_3857_BOUNDS = (-20037508.34, -20048966.1, 20037508.34, 20048966.1)
+
+# Scale of the basemap: a map in a terminal of 120 columns shows as much as one 240 pixels wide on
+# a web page, so that only the main roads, rivers and borders are left.
+CSS_PIXELS_PER_COLUMN = 2
+
+
+class BasemapError(ValueError):
+    """Basemap that cannot be drawn."""
 
 
 def plot_geo_data(
@@ -61,8 +71,9 @@ def plot_geo_data(
             If a list, must be the same length as a number of files. Defaults to "C0".
         alpha (Union[str, list[float]], optional): Opacity or list of opacities used to plot
             geo data.  If a list, must be the same length as a number of files. Defaults to 1.
-        basemap_provider (str, optional): A basemap used to plot under the geo data.
-            Defaults to None.
+        basemap_provider (str, optional): A basemap used to plot under the geo data: a name of
+            `basemaplibre.STYLES`, a URL or a path of a MapLibre style JSON, or anything that
+            contextily draws, if it's installed. Defaults to None.
         background_color (str, optional): Background color. Used then basemap_provider is None.
             Defaults to None.
         no_border (bool, optional): Removes the border around the map. Defaults to False.
@@ -71,7 +82,7 @@ def plot_geo_data(
         console_height (int, optional): Console height. Can be used to set arbitrary value.
             Defaults to None.
         plotting_dpi (int, optional): Quality of matplotlib figure. It's used to multiply terminal
-            size by some value to get better quality plot. Defaults to 10.
+            size by some value to get better quality plot. Defaults to 8.
     """
     force_terminal = os.getenv("FORCE_TERMINAL_MODE", "false").lower() == "true"
     if force_terminal:
@@ -136,24 +147,11 @@ def plot_geo_data(
 
         left, bottom, right, top = _expand_axes_limit_to_match_ratio(ax, ratio=map_ratio)
 
-        if basemap_provider:
-            try:
-                cx.add_basemap(
-                    ax,
-                    source=basemap_provider,
-                    crs=3857,
-                    attribution=False,
-                )
-            except ValueError:
-                cx.add_basemap(
-                    ax,
-                    source=basemap_provider,
-                    crs=3857,
-                    attribution=False,
-                    zoom=0,
-                )
-
         ax.set_position((0, 0, 1, 1))
+
+        if basemap_provider:
+            _add_basemap(ax, basemap_provider)
+
         canvas.draw()
 
         # buffer_rgba() replaces the deprecated (and removed in matplotlib 3.10)
@@ -205,19 +203,42 @@ def plot_geo_data(
         )
 
 
-ESRI_URL = "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/{variant}/MapServer/tile/"
-
-
 def get_predefined_dark_style() -> tuple[str, str]:
     """Get default background and color for dark style."""
-    url = ESRI_URL.format(variant="World_Dark_Gray_Base") + "{z}/{y}/{x}"
-    return url, "C1"
+    return "OpenFreeMap.Dark", "C1"
 
 
 def get_predefined_light_style() -> tuple[str, str]:
     """Get default background and color for light style."""
-    url = ESRI_URL.format(variant="World_Light_Gray_Base") + "{z}/{y}/{x}"
-    return url, "C0"
+    return "OpenFreeMap.Positron", "C0"
+
+
+def _add_basemap(ax: Axes, source: str) -> None:
+    """Draw a basemap without labels, which would not be readable in a terminal."""
+    try:
+        bml.add_basemap(
+            ax,
+            source=source,
+            crs=3857,
+            attribution=False,
+            labels=False,
+            # A column of the terminal is an inch of the figure, in which matplotlib draws
+            # 96 CSS pixels of the style by default.
+            zoom_adjust=math.log2(CSS_PIXELS_PER_COLUMN / 96),
+            pixel_ratio=SUB_W / CSS_PIXELS_PER_COLUMN,
+        )
+    except TypeError:
+        # Not a MapLibre style, so there are no labels to drop: raster tiles and files are drawn by
+        # contextily, if it's installed.
+        try:
+            bml.add_basemap(ax, source=source, crs=3857, attribution=False)
+        except ImportError as ex:
+            raise BasemapError(
+                f"Basemap {source!r} is not a MapLibre style."
+                " Raster tiles need contextily: pip install contextily"
+            ) from ex
+    except ValueError as ex:
+        raise BasemapError(str(ex)) from ex
 
 
 def _load_geo_data(
