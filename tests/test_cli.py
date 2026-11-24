@@ -43,7 +43,7 @@ def test_value_names_in_help() -> None:
 
     assert result.exit_code == 0
     lines = Text.from_ansi(result.output).plain.splitlines()
-    for option, name in [("--bbox", "BBOX"), ("--color", "COLOR"), ("--opacity", "FLOAT")]:
+    for option, name in (("--bbox", "BBOX"), ("--color", "COLOR"), ("--opacity", "FLOAT")):
         assert any(option in line and name in line for line in lines)
 
 
